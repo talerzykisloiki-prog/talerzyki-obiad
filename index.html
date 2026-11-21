@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Obiad do pracy – Talerzyki i Słoiki</title>
+  <!-- Pytanie do Google wysyłamy od razu, zanim wczyta się reszta strony (odpowiedź trwa 2–5 s) -->
+  <script>(function(){try{var m=new URLSearchParams(location.search).get("m");if(!m){m=JSON.parse(localStorage.getItem("tis_kod")||"\"\"");}if(m){window.__menuP=fetch("https://script.google.com/macros/s/AKfycbyFFiNUp1WLZdbwrmbFDB7NbYVsGNE2pVuPa5Vu664VDbRhrw1dZ_zorRBwcrxaVXVF/exec?a=menu&m="+encodeURIComponent(m),{cache:"no-store"}).then(function(r){return r.json();});}}catch(e){}})();</script>
   <meta name="description" content="Domowy obiad z dowozem do pracy — Talerzyki i Słoiki, Gorzów Wlkp." />
   <meta name="theme-color" content="#0C1712" />
   <meta name="robots" content="noindex, nofollow" />
@@ -22,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&display=swap" rel="stylesheet" />
   <link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="app.css?v=5" />
+  <link rel="stylesheet" href="app.css?v=7" />
   <link rel="modulepreload" href="menu.js?v=5" />
   <link rel="modulepreload" href="config.js?v=5" />
 </head>
@@ -45,7 +47,6 @@
 
 <div class="app">
 
-  <div class="boot" id="boot" aria-live="polite"><span class="logo">Talerzyki i Słoiki</span><span class="boot-dot"></span><small>Wczytujemy dzisiejsze menu…</small></div>
 
   <!-- ═════════ 1. START: miejsce i dane dostawy ═════════ -->
   <section class="start" id="vStart" hidden>
@@ -109,7 +110,7 @@
           </label>
         </div>
 
-        <button class="btn btn-brass btn-wide" type="submit">Przejdź do menu <span aria-hidden="true">→</span></button>
+        <button class="btn btn-brass btn-wide" type="submit" id="goBtn">Przejdź do menu <span aria-hidden="true">→</span></button>
       </div>
     </form>
     <p class="start-foot">Bistro Talerzyki i Słoiki · Galeria Manhattan, ul. Kombatantów 30<br>Pon–Sob 11:00–19:00</p>
@@ -194,6 +195,6 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script type="module" src="app.js?v=6"></script>
+<script type="module" src="app.js?v=7"></script>
 </body>
 </html>

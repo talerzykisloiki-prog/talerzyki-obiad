@@ -85,7 +85,15 @@ function show(view) {
 let floorSel = null;
 const isOffice = () => !!(server.loc || {}).office;
 function renderLocs() {
-  const l = server.loc || { name: '', place: '', hint: '' };
+  const btn = $('#goBtn');
+  if (!server.loc) {
+    // dane miejsca jeszcze jadą z Google — formularz można już wypełniać
+    $('#locs').innerHTML = `<div class="loc static pending"><span class="loc-ico"><svg><use href="#i-pin"/></svg></span><span class="loc-txt"><b></b><span></span></span></div>`;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Chwileczkę…';
+    return;
+  }
+  btn.disabled = false; btn.innerHTML = 'Przejdź do menu <span aria-hidden="true">→</span>';
+  const l = server.loc;
   $('#locs').innerHTML = `<div class="loc static">
     <span class="loc-ico"><svg><use href="#i-${l.office ? 'building' : 'pin'}"/></svg></span>
     <span class="loc-txt"><b>${esc(l.name)}</b>${l.place ? `<span>${esc(l.place)}</span>` : ''}${l.office ? `<small>${esc(l.hint)}</small>` : ''}</span></div>`;
@@ -602,7 +610,9 @@ $('#againBtn').addEventListener('click', () => { clearTimeout(pollT); history.re
 async function loadServer() {
   if (!API_URL) { server = { ...server, open: false, message: 'Zamówienia online uruchamiamy lada dzień. Do tego czasu zamów telefonicznie: 728 343 338.' }; return 'ok'; }
   try {
-    const d = await apiGet({ a: 'menu', m: KOD });
+    let d = null;
+    if (window.__menuP) { try { d = await window.__menuP; } catch { d = null; } window.__menuP = null; }
+    if (!d || (!d.locked && !d.loc)) d = await apiGet({ a: 'menu', m: KOD });
     if (d && d.locked) return 'locked';
     if (d && d.today && d.loc) { server = d; serverFresh = true; store.set(K_SERWER, { ...d, kod: KOD }); return 'ok'; }
   } catch { /* brak sieci */ }
@@ -619,21 +629,27 @@ function route() {
 // Z linkiem: jeśli telefon pamięta dzisiejsze menu, pokazujemy je od razu, a świeże dane dociągamy w tle.
 (async () => {
   if (!KOD) return show('vLock');
+  // Telefon pamięta miejsce (i dane klienta) z poprzedniej wizyty → od razu menu.
+  // Wczorajsze specjały chowamy, dzisiejsze dociągamy w tle.
   const cached = store.get(K_SERWER, null);
-  const instant = cached && cached.kod === KOD && cached.loc && cached.today === warsawNow().date;
-  if (instant) { server = cached; route(); }
+  const known = cached && cached.kod === KOD && cached.loc;
+  if (known) {
+    server = { ...cached };
+    if (cached.today !== warsawNow().date) { server.specials = []; server.today = warsawNow().date; }
+    route();
+  } else {
+    // Pierwsza wizyta: formularz od razu, miejsce dojedzie z Google za chwilę.
+    openStart();
+  }
   const res = await loadServer();
   if (res === 'locked') return showLock();
-  if (!server.loc) {
-    // pierwsza wizyta bez internetu / błąd Google
-    const b = document.getElementById('boot');
-    if (b) b.querySelector('small').textContent = 'Nie udało się połączyć. Sprawdź internet i odśwież stronę.';
+  if (res !== 'ok' && !server.loc) {
+    $('#locs').innerHTML = `<div class="form-err">Nie udało się połączyć. Sprawdź internet i odśwież stronę.</div>`;
     return;
   }
   serverFresh = true;
   cleanCart(); updateCartbar();
-  if (!instant) return route();
   if (!$('#vMenu').hidden) { const y = window.scrollY; openMenuRefresh(); window.scrollTo(0, y); }
-  if (!$('#vStart').hidden) applyLoc();
+  if (!$('#vStart').hidden) { applyLoc(); if (!known && profilOk(profil)) openMenu(); }
   if (sheetMode === 'cart') renderCart();
 })();
