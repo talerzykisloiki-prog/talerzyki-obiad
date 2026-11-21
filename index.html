@@ -24,8 +24,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&display=swap" rel="stylesheet" />
   <link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="app.css?v=7" />
-  <link rel="modulepreload" href="menu.js?v=5" />
+  <link rel="stylesheet" href="app.css?v=8" />
+  <link rel="modulepreload" href="menu.js?v=8" />
   <link rel="modulepreload" href="config.js?v=5" />
 </head>
 <body>
@@ -66,6 +66,7 @@
         <li><svg><use href="#i-building"/></svg>Dowóz do pracy</li>
         <li><svg><use href="#i-leaf"/></svg>Dodatki w cenie</li>
         <li><svg><use href="#i-cash"/></svg>Płacisz przy odbiorze</li>
+        <li class="perk-half"><span class="half-ico" aria-hidden="true">½</span>Pół porcji −30%</li>
       </ul>
     </header>
 
@@ -146,9 +147,10 @@
       </div>
       <div class="banner" id="closedBanner" hidden></div>
       <div class="info-strip"><svg><use href="#i-clock"/></svg><span id="leadInfo">Zamów najpóźniej 90 minut przed dostawą. Dowozimy Pon–Sob 11:30–18:30.</span></div>
+      <a class="half-promo" id="halfPromo" href="#c-obiady" data-c="obiady"></a>
       <nav class="tiles" id="tiles" aria-label="Kategorie"></nav>
       <div id="cats"></div>
-      <p class="menu-foot">Pół porcji dań obiadowych: −30% od ceny.<br>Masz pytanie lub alergię? <a href="tel:+48728343338">Zadzwoń: 728 343 338</a></p>
+      <p class="menu-foot">Każde danie możesz zamówić jako pół porcji — 30% taniej.<br>Masz pytanie lub alergię? <a href="tel:+48728343338">Zadzwoń: 728 343 338</a></p>
     </main>
 
     <div class="cartbar" id="cartbar">
@@ -195,6 +197,6 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script type="module" src="app.js?v=7"></script>
+<script type="module" src="app.js?v=8"></script>
 </body>
 </html>
