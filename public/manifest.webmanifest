@@ -1,0 +1,12 @@
+{
+  "name": "Obiad do biura – Talerzyki i Słoiki",
+  "short_name": "Obiad do biura",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#12211B",
+  "theme_color": "#0C1712",
+  "lang": "pl",
+  "icons": [
+    { "src": "img/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

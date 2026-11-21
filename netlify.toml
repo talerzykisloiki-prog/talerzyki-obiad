@@ -1,0 +1,9 @@
+# Strona statyczna (bez funkcji i bez budowania) — zamówienia trafiają do Google Tabeli przez Apps Script.
+[build]
+  publish = "public"
+  command = ""
+
+[[headers]]
+  for = "/panel.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"

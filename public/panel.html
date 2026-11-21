@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Panel kuchni – Obiad do biura</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0C1712" />
+  <link rel="icon" type="image/png" href="img/favicon.png" />
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&display=swap" rel="stylesheet" />
+  <link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css?v=5" />
+  <style>
+    .app { max-width: 760px; }
+    .p-pad { padding: 0 var(--pad) calc(40px + var(--safe-b)); }
+    .login { min-height: 100dvh; display: grid; place-items: center; padding: var(--pad); }
+    .login .card { width: 100%; max-width: 380px; display: grid; gap: 16px; text-align: center; }
+    .login h1 { font-family: var(--serif); font-weight: 300; font-size: 1.9rem; }
+    .login .input { text-align: center; font-size: 1.6rem; letter-spacing: .4em; }
+    .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 10px 0; }
+    .tabs button { min-height: 42px; border-radius: 10px; border: 1px solid var(--line-2); font-weight: 600; font-size: .88rem; }
+    .tabs button[aria-selected="true"] { background: var(--text); color: var(--bg-deep); border-color: var(--text); }
+    .tabs .cnt { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--brass); color: var(--bg-deep); font-size: .72rem; margin-left: 4px; }
+    .bar { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 14px 0 4px; flex-wrap: wrap; }
+    .bar h2 { font-family: var(--serif); font-weight: 400; font-size: 1.4rem; }
+    .bar input[type=date] { min-height: 42px; padding: 0 10px; border-radius: 10px; background: var(--bg-deep); border: 1px solid var(--line-2); }
+    .sumrow { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 4px; }
+    .sumrow span { font-size: .8rem; padding: .3rem .65rem; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+    .sumrow b { color: var(--text); }
+    .order { margin-top: 12px; padding: 16px; border-radius: var(--r); background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--line-2); }
+    .order.s-nowe { border-left-color: var(--brass); box-shadow: 0 0 0 1px rgba(201,165,107,.35); }
+    .order.s-przyjete { border-left-color: #8FB4E0; }
+    .order.s-w-drodze { border-left-color: #B79BE0; }
+    .order.s-dostarczone { border-left-color: var(--ok); opacity: .7; }
+    .order.s-anulowane { border-left-color: var(--danger); opacity: .5; }
+    .o-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+    .o-when { font-family: var(--serif); font-size: 1.9rem; line-height: 1; }
+    .o-when small { font-family: var(--sans); font-size: .78rem; color: var(--muted); display: block; margin-top: 4px; }
+    .o-where { text-align: right; }
+    .o-where b { display: block; font-size: 1.15rem; }
+    .o-where span { font-size: .82rem; color: var(--muted); }
+    .o-tel { display: inline-flex; gap: .4rem; align-items: center; margin-top: 10px; font-weight: 600; color: var(--brass-hi); font-size: 1rem; }
+    .o-tel svg { width: 16px; height: 16px; fill: currentColor; }
+    .o-items { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; display: grid; gap: 8px; }
+    .o-items li b { font-size: 1rem; }
+    .o-items li div { font-size: .85rem; color: rgba(237,232,221,.78); }
+    .o-items .half { color: var(--brass-hi); font-weight: 600; }
+    .o-note { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: var(--brass-bg); font-size: .88rem; }
+    .o-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; gap: 10px; flex-wrap: wrap; }
+    .o-total { font-weight: 700; font-size: 1.1rem; }
+    .o-total small { font-weight: 500; color: var(--muted); font-size: .8rem; margin-left: 6px; }
+    .o-status { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 12px; }
+    .o-status button { min-height: 44px; border-radius: 10px; border: 1px solid var(--line-2); font-size: .78rem; font-weight: 600; line-height: 1.15; padding: 0 4px; }
+    .o-status button[aria-pressed="true"] { background: var(--brass); color: var(--bg-deep); border-color: var(--brass); }
+    .o-cancel { font-size: .78rem; color: var(--danger); padding: .3rem 0; }
+    .sp-group { margin-top: 18px; }
+    .sp-group textarea { min-height: 96px; font-size: 15px; }
+    .hint { font-size: .84rem; color: var(--muted); line-height: 1.5; margin-top: 8px; }
+    .hint code { color: var(--brass-hi); }
+    .locf { grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); padding: 6px 0 0; }
+    .locf button { font-size: .8rem; min-height: 38px; }
+    .o-loc { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bg-deep); background: var(--brass); padding: .2rem .55rem; border-radius: 999px; margin-bottom: 6px; }
+    .o-when.asap { font-size: 1.25rem; color: var(--brass-hi); }
+    .o-pay-cash { color: var(--ok); }
+    .live { display: inline-flex; align-items: center; gap: .4rem; font-size: .78rem; color: var(--muted); }
+    .live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); animation: blink 2s infinite; }
+    @keyframes blink { 50% { opacity: .3; } }
+  </style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></symbol>
+</defs></svg>
+
+<div class="app">
+  <section class="login" id="vLogin">
+    <form class="card" id="loginForm">
+      <span class="note">Talerzyki i Słoiki</span>
+      <h1>Panel kuchni</h1>
+      <input class="input" id="pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="12" placeholder="PIN" aria-label="PIN" />
+      <span class="err" id="pinErr" hidden>Zły PIN</span>
+      <button class="btn btn-brass btn-wide" type="submit">Wejdź</button>
+    </form>
+  </section>
+
+  <section id="vPanel" hidden>
+    <header class="topbar">
+      <div class="topbar-row"><span class="logo">Panel kuchni</span><span class="live" id="live">na żywo</span></div>
+      <div class="tabs" role="tablist">
+        <button role="tab" data-tab="orders" aria-selected="true">Zamówienia<span class="cnt" id="newCnt" hidden>0</span></button>
+        <button role="tab" data-tab="specials" aria-selected="false">Specjały dnia</button>
+        <button role="tab" data-tab="settings" aria-selected="false">Ustawienia</button>
+      </div>
+    </header>
+
+    <div class="p-pad">
+      <div id="tOrders">
+        <div class="bar"><h2 id="ordersTitle">Dziś</h2><input type="date" id="day" aria-label="Dzień" /></div>
+        <div class="tabs locf" id="locFilter" role="tablist" aria-label="Miejsce"></div>
+        <div class="sumrow" id="sumrow"></div>
+        <div id="orders"></div>
+      </div>
+
+      <div id="tSpecials" hidden>
+        <div class="bar"><h2>Specjały dnia</h2><span class="live" id="spDate"></span></div>
+        <p class="hint">Jedno danie w linii: <code>nazwa | cena</code>. Do dania głównego bez wyboru dodatków dopisz <code>| bez dodatków</code>.<br>Po zapisaniu specjały są widoczne dla klientów <b>tylko dziś</b> — rano wpisz nowe.</p>
+        <form id="spForm"></form>
+      </div>
+
+      <div id="tSettings" hidden>
+        <div class="bar"><h2>Ustawienia</h2></div>
+        <div class="card" style="display:grid;gap:14px">
+          <button type="button" class="toggle-row" id="openToggle" role="switch" aria-checked="true"><span><b>Przyjmujemy zamówienia online</b><small>Wyłącz, gdy kuchnia nie nadąża lub zamykamy wcześniej</small></span><span class="switch"></span></button>
+          <label class="field"><span>Komunikat dla klientów, gdy wyłączone <small>(opcj.)</small></span><input class="input" id="closedMsg" maxlength="200" placeholder="np. Dziś zamówienia tylko telefonicznie: 728 343 338" /></label>
+          <button class="btn btn-brass btn-wide" type="button" id="saveState">Zapisz</button>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <b>Powiadomienia</b>
+          <p class="hint">Trzymaj ten panel otwarty na telefonie lub tablecie w kuchni — nowe zamówienie zagra dźwiękiem i pojawi się na górze listy. Odświeżanie co 15 sekund. Wszystkie zamówienia zapisują się też w Google Tabeli.</p>
+          <button class="btn btn-line btn-wide" type="button" id="testSound" style="margin-top:10px">Sprawdź dźwięk</button>
+          <a class="btn btn-line btn-wide" href="https://docs.google.com/spreadsheets/d/1pkldRgA_ayhOaEyf4_3E9VI37IVGlIHSEiN67hcZfKk/edit" target="_blank" rel="noopener" style="margin-top:10px">Otwórz tabelę zamówień (Google)</a>
+        </div>
+        <button class="btn btn-line btn-wide" type="button" id="logout" style="margin-top:14px">Wyloguj</button>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+import { zl, SPECIAL_GROUPS } from './menu.js?v=5';
+import { API_URL } from './config.js?v=5';
+let LOCS = []; // nazwy miejsc z arkusza „Miejsca”
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ls = { get: k => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} }, del: k => { try { localStorage.removeItem(k); } catch {} } };
+let PIN = ls.get('tis_pin') || '';
+let toastT; const toast = m => { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2200); };
+
+function today() {
+  const p = {}; for (const x of new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Warsaw', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date())) p[x.type] = x.value;
+  return `${p.year}-${p.month}-${p.day}`;
+}
+async function api(op, body = {}) {
+  const r = await fetch(API_URL, { method: 'POST', headers: { 'content-type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ a: 'panel', pin: PIN, op, ...body }) });
+  const d = await r.json();
+  if (d.auth === false) { logout(); throw new Error('PIN'); }
+  if (d.error) throw new Error(d.error);
+  return d;
+}
+
+// Dźwięk nowego zamówienia
+let ac;
+function beep() {
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    [0, .22, .44].forEach((t, i) => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = [880, 1175, 1568][i]; o.connect(g); g.connect(ac.destination); g.gain.setValueAtTime(.0001, ac.currentTime + t); g.gain.exponentialRampToValueAtTime(.35, ac.currentTime + t + .02); g.gain.exponentialRampToValueAtTime(.0001, ac.currentTime + t + .2); o.start(ac.currentTime + t); o.stop(ac.currentTime + t + .22); });
+    navigator.vibrate && navigator.vibrate([200, 100, 200]);
+  } catch {}
+}
+
+// ─── Logowanie ───
+$('#loginForm').addEventListener('submit', async e => {
+  e.preventDefault(); PIN = $('#pin').value.trim();
+  ac = ac || new (window.AudioContext || window.webkitAudioContext)(); // odblokowanie dźwięku gestem
+  try { await api('ustawienia'); ls.set('tis_pin', PIN); start(); }
+  catch { $('#pinErr').hidden = false; }
+});
+function logout() { PIN = ''; ls.del('tis_pin'); $('#vPanel').hidden = true; $('#vLogin').hidden = false; clearInterval(timer); }
+$('#logout').addEventListener('click', logout);
+
+// ─── Zakładki ───
+document.querySelector('.tabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-tab]'); if (!b) return;
+  document.querySelectorAll('[data-tab]').forEach(x => x.setAttribute('aria-selected', x === b));
+  $('#tOrders').hidden = b.dataset.tab !== 'orders'; $('#tSpecials').hidden = b.dataset.tab !== 'specials'; $('#tSettings').hidden = b.dataset.tab !== 'settings';
+  window.scrollTo(0, 0);
+});
+
+// ─── Zamówienia ───
+const STATUSY = [['nowe', 'Nowe'], ['przyjete', 'Przyjęte'], ['w-drodze', 'W drodze'], ['dostarczone', 'Dostar­czone']];
+let known = null, timer, orders = [];
+const floorTxt = f => f === 0 ? 'Parter' : `Piętro ${f}`;
+let locF = 'all';
+function renderLocFilter() {
+  const cnt = id => orders.filter(o => o.status !== 'anulowane' && (id === 'all' || o.loc === id)).length;
+  const names = [...new Set([...LOCS, ...orders.map(o => o.loc)])];
+  const opts = [['all', 'Wszystkie'], ...names.map(n => [n, n])];
+  $('#locFilter').innerHTML = opts.map(([id, n]) => `<button data-loc="${id}" aria-selected="${locF === id}">${esc(n)}${cnt(id) ? ` <span class="cnt">${cnt(id)}</span>` : ''}</button>`).join('');
+}
+$('#locFilter').addEventListener('click', e => { const b = e.target.closest('[data-loc]'); if (!b) return; locF = b.dataset.loc; render(); });
+const isAsap = o => !/^\d/.test(o.time);
+function render() {
+  renderLocFilter();
+  const all = orders;
+  const orders_ = all.filter(o => locF === 'all' || o.loc === locF);
+  return renderList(orders_);
+}
+function renderList(orders) {
+  const active = orders.filter(o => o.status !== 'anulowane');
+  const sum = active.reduce((a, o) => a + o.total, 0);
+  const nowe = orders.filter(o => o.status === 'nowe').length;
+  $('#newCnt').hidden = !nowe; $('#newCnt').textContent = nowe;
+  document.title = (nowe ? `(${nowe}) ` : '') + 'Panel kuchni';
+  // Podsumowanie porcji do przygotowania
+  const portions = {};
+  for (const o of active) if (o.status !== 'dostarczone') for (const l of o.items) portions[l.name] = (portions[l.name] || 0) + l.qty;
+  $('#sumrow').innerHTML = `<span>Zamówień: <b>${active.length}</b></span><span>Razem: <b>${zl(sum)}</b></span>` +
+    Object.entries(portions).sort((a, b) => b[1] - a[1]).map(([n, q]) => `<span><b>${q}×</b> ${esc(n)}</span>`).join('');
+  if (!orders.length) { $('#orders').innerHTML = '<p class="empty">Brak zamówień na ten dzień.</p>'; return; }
+  const sorted = [...orders].sort((a, b) => (a.status === 'dostarczone' || a.status === 'anulowane') - (b.status === 'dostarczone' || b.status === 'anulowane') || (isAsap(b) - isAsap(a)) || a.time.localeCompare(b.time) || (a.createdAt > b.createdAt ? 1 : -1));
+  $('#orders').innerHTML = sorted.map(o => `<article class="order s-${o.status}">
+    <div class="o-top">
+      <div class="o-when ${isAsap(o) ? 'asap' : ''}">${isAsap(o) ? 'Od razu' : esc(o.time)}<small>#${esc(o.code)} · złożone ${new Date(o.createdAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Warsaw' })}</small></div>
+      <div class="o-where"><span class="o-loc">${esc(o.locName)}</span>${o.customer.floor === null
+        ? `<b>${esc(o.customer.name || '—')}</b>`
+        : `<b>${floorTxt(o.customer.floor)} · pok. ${esc(o.customer.room)}</b><span>${esc([o.customer.company, o.customer.name].filter(Boolean).join(' · '))}</span>`}</div>
+    </div>
+    ${o.customer.phone ? `<a class="o-tel" href="tel:+48${esc(o.customer.phone.replace(/\D/g, '').slice(-9))}"><svg><use href="#i-phone"/></svg>${esc(o.customer.phone)}</a>` : ''}
+    <ul class="o-items">${o.items.map(l => `<li><b>${l.qty}× ${esc(l.name)}</b>${l.variant ? ` — ${esc(l.variant)}` : ''}${l.half ? ' <span class="half">½ porcji</span>' : ''}
+      ${(l.dodatki?.length || l.surowki?.length) ? `<div>${esc([...(l.dodatki || []), ...(l.surowki || [])].join(' · '))}</div>` : (l.dodatki ? '<div>bez dodatku</div>' : '')}
+      ${l.extras?.length ? `<div>+ ${esc(l.extras.join(', '))}</div>` : ''}${l.note ? `<div>„${esc(l.note)}”</div>` : ''}</li>`).join('')}</ul>
+    ${o.note ? `<div class="o-note">${esc(o.note)}</div>` : ''}
+    <div class="o-foot"><span class="o-total">${zl(o.total)}<small class="${/reszta|odliczona/.test(o.paymentLabel) ? 'o-pay-cash' : ''}">${esc(o.paymentLabel)}</small></span>${o.status !== 'anulowane' ? `<button class="o-cancel" data-cancel="${o.id}">Anuluj</button>` : '<span class="o-cancel">Anulowane</span>'}</div>
+    ${o.status !== 'anulowane' ? `<div class="o-status">${STATUSY.map(([k, n]) => `<button data-id="${o.id}" data-s="${k}" aria-pressed="${o.status === k}">${n}</button>`).join('')}</div>` : ''}
+  </article>`).join('');
+}
+async function load(silent) {
+  const day = $('#day').value || today();
+  try {
+    const d = await api('zamowienia', { day });
+    const ids = new Set(d.orders.map(o => o.id));
+    if (known && day === today()) { const fresh = d.orders.filter(o => !known.has(o.id)); if (fresh.length) { beep(); toast(`Nowe zamówienie: ${fresh[0].customer.floor === null ? fresh[0].locName + ', ' + fresh[0].customer.name : floorTxt(fresh[0].customer.floor) + ', pok. ' + fresh[0].customer.room}`); } }
+    if (day === today()) known = ids;
+    orders = d.orders; render();
+    $('#live').textContent = 'odświeżono ' + new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  } catch (e) { if (!silent) toast('Nie udało się pobrać zamówień'); }
+}
+$('#day').addEventListener('change', () => { $('#ordersTitle').textContent = $('#day').value === today() ? 'Dziś' : $('#day').value; load(); });
+$('#orders').addEventListener('click', async e => {
+  const b = e.target.closest('[data-s],[data-cancel]'); if (!b) return;
+  const id = b.dataset.id || b.dataset.cancel, status = b.dataset.s || 'anulowane';
+  if (status === 'anulowane' && !confirm('Anulować to zamówienie?')) return;
+  const o = orders.find(x => x.id === id); const prev = o.status; o.status = status; render();
+  try { await api('status', { id, day: o.day, status }); } catch { o.status = prev; render(); toast('Nie zapisano — spróbuj ponownie'); }
+});
+
+// ─── Specjały ───
+let settings;
+function renderSpecials() {
+  $('#spDate').textContent = settings.specialsDate === settings.today ? 'aktualne na dziś' : 'nieaktualne — wpisz dzisiejsze';
+  $('#spForm').innerHTML = SPECIAL_GROUPS.map(g => `<label class="field sp-group"><span>${esc(g.name)}</span><textarea class="input" name="${g.id}" rows="3">${esc(settings.specialsText[g.id] || '')}</textarea></label>`).join('') +
+    `<button class="btn btn-brass btn-wide" type="submit" style="margin-top:18px">Zapisz specjały na dziś</button>`;
+}
+$('#spForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const text = {}; for (const g of SPECIAL_GROUPS) text[g.id] = e.target.elements[g.id].value;
+  try { await api('specjaly', { text }); settings.specialsText = text; settings.specialsDate = settings.today; renderSpecials(); toast('Zapisano — klienci widzą nowe specjały'); }
+  catch { toast('Nie zapisano'); }
+});
+
+// ─── Ustawienia ───
+$('#openToggle').addEventListener('click', e => { const b = e.currentTarget; b.setAttribute('aria-checked', b.getAttribute('aria-checked') !== 'true'); });
+$('#saveState').addEventListener('click', async () => {
+  try { await api('stan', { open: $('#openToggle').getAttribute('aria-checked') === 'true', message: $('#closedMsg').value }); toast('Zapisano'); } catch { toast('Nie zapisano'); }
+});
+$('#testSound').addEventListener('click', beep);
+
+async function start() {
+  $('#vLogin').hidden = true; $('#vPanel').hidden = false;
+  $('#day').value = today();
+  settings = await api('ustawienia');
+  LOCS = settings.locations || [];
+  $('#openToggle').setAttribute('aria-checked', settings.open); $('#closedMsg').value = settings.message || '';
+  renderSpecials();
+  await load();
+  clearInterval(timer); timer = setInterval(() => load(true), 15000);
+}
+if (PIN) start().catch(() => {});
+</script>
+</body>
+</html>
