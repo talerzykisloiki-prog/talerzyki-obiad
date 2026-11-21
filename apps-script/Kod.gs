@@ -1,4 +1,4 @@
-// Obiad do biura — Talerzyki i Słoiki. Plik wygenerowany 2026-11-21 11:06 (node apps-script/zbuduj.mjs).
+// Obiad do biura — Talerzyki i Słoiki. Plik wygenerowany 2026-11-21 11:14 (node apps-script/zbuduj.mjs).
 // Wklej CAŁOŚĆ do edytora Apps Script (Rozszerzenia → Apps Script) w miejsce kodu.
 
 // ═══════════════════════════════════════════════════════════════
@@ -587,7 +587,7 @@ function przygotuj() {
   // separator argumentów zależy od ustawień regionalnych tabeli (pl_PL → „;”)
   const sep = /^(en|ja|ko|zh|th|he|ar)/.test(book.getSpreadsheetLocale()) ? ',' : ';';
   const links = []; for (let r = 2; r <= 51; r++) links.push(['=IF(A' + r + '=""' + sep + '""' + sep + '"' + STRONA + '?m="&A' + r + ')']);
-  mi.getRange(2, 6, 50, 1).setFormulas(links);
+  if (!mi.getRange(2, 6).getFormula()) mi.getRange(2, 6, 50, 1).setFormulas(links); // nie nadpisuj działających linków
   [150, 220, 90, 220, 80, 520].forEach((w, i) => mi.setColumnWidth(i + 1, w));
   mi.getRange('H1').setValue('Jak to działa').setFontWeight('bold');
   mi.getRange('H2').setValue('Każde miejsce ma swój tajny link (kolumna F). Bez linku nie da się zamówić. Typ „piętra” = piętro, pokój i wybór godziny; „imię” = tylko imię, dowóz jak najszybciej. Link wyciekł? Zmień kod w kolumnie A — stary link przestanie działać. Nowy kod: min. 10 losowych liter i cyfr.').setWrap(true);
