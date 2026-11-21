@@ -88,7 +88,7 @@ function renderLocs() {
   const l = server.loc || { name: '', place: '', hint: '' };
   $('#locs').innerHTML = `<div class="loc static">
     <span class="loc-ico"><svg><use href="#i-${l.office ? 'building' : 'pin'}"/></svg></span>
-    <span class="loc-txt"><b>${esc(l.name)}</b>${l.place ? `<span>${esc(l.place)}</span>` : ''}<small>${esc(l.hint)}</small></span></div>`;
+    <span class="loc-txt"><b>${esc(l.name)}</b>${l.place ? `<span>${esc(l.place)}</span>` : ''}${l.office ? `<small>${esc(l.hint)}</small>` : ''}</span></div>`;
 }
 function renderFloors() {
   const box = $('#floors');
@@ -170,7 +170,7 @@ function openMenuRefresh() {
   if (!server.open) { cb.hidden = false; cb.textContent = server.message || 'W tej chwili nie przyjmujemy zamówień online. Zadzwoń: 728 343 338.'; }
   else if (profLoc().office ? !slotsFor(today).length : asapDay() !== today) { cb.hidden = false; cb.textContent = `Na dziś już nie zdążymy — możesz zamówić na ${dayLabel(nextWorkday(today), today).long}.`; }
   else cb.hidden = true;
-  $('#leadInfo').textContent = profLoc().office ? 'Zamów najpóźniej 90 minut przed dostawą. Dowozimy Pon–Sob 11:30–18:30.' : `Dowozimy do: ${profLoc().name}. Zamów rano — przywieziemy, jak tylko będzie gotowe.`;
+  $('#leadInfo').textContent = profLoc().office ? 'Zamów najpóźniej 90 minut przed dostawą. Dowozimy Pon–Sob 11:30–18:30.' : `Dowozimy do: ${profLoc().name}.`;
   renderMenu();
   updateCartbar();
 }
