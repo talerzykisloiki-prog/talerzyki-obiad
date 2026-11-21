@@ -33,6 +33,8 @@ export const SUROWKI = [
 export const LIMIT_DODATKI = 1;
 export const LIMIT_SUROWKI = 2;
 // Pół porcji: −30% od ceny podstawowej
+// Cenę pół porcji zaokrąglamy do pełnych złotych (23,50 → 24 zł, 23,40 → 23 zł).
+// Na razie pół porcji można wziąć z KAŻDEGO dania (także specjałów).
 export const POL_PORCJI_RABAT = 0.30;
 
 // Kategorie stałego menu. Specjały dnia przychodzą osobno (panel kuchni).
@@ -124,6 +126,9 @@ export const CATEGORIES = [
   },
 ];
 
+// Pół porcji — wszystkie dania
+for (const c of CATEGORIES) for (const it of c.items) it.half = true;
+
 // Grupy specjałów dnia (w tej kolejności w menu i w panelu kuchni)
 export const SPECIAL_GROUPS = [
   { id: 'zupy-mieso', name: 'Zupy gotowane na mięsie', sides: false },
@@ -163,7 +168,7 @@ export function parseSpecials(textByGroup) {
         name,
         price: Math.round(zl * 100),
         sides: g.sides && !noSides,
-        half: g.sides,
+        half: true,
         special: true,
       });
     });
@@ -183,12 +188,15 @@ export function unitPrice(item, opts = {}) {
     const v = item.variants.options[opts.variant | 0] || item.variants.options[0];
     p += v.delta || 0;
   }
-  if (item.half && opts.half) p = Math.round(p * (1 - POL_PORCJI_RABAT));
+  if (item.half && opts.half) p = Math.round(p * (1 - POL_PORCJI_RABAT) / 100) * 100;
   if (item.extras && Array.isArray(opts.extras)) {
     for (const e of item.extras) if (opts.extras.includes(e.id)) p += e.price;
   }
   return p;
 }
+
+// Cena pół porcji samego dania (bez dopłat)
+export const halfPrice = item => unitPrice(item, { half: true });
 
 export function zl(grosze) {
   return (grosze / 100).toFixed(2).replace('.', ',') + ' zł';

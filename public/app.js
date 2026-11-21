@@ -1,8 +1,8 @@
 import {
   CATEGORIES, SPECIAL_GROUPS, DODATKI, SUROWKI, LIMIT_DODATKI, LIMIT_SUROWKI,
-  findItem, unitPrice, zl, OPEN_FROM, OPEN_TO, LEAD_MIN, SLOT_STEP, PIETRA,
+  findItem, unitPrice, halfPrice, zl, OPEN_FROM, OPEN_TO, LEAD_MIN, SLOT_STEP, PIETRA,
   ASAP,
-} from './menu.js?v=5';
+} from './menu.js?v=8';
 import { API_URL } from './config.js?v=5';
 
 // Tajny kod miejsca z linku (?m=…). Bez niego nie da się zamówić.
@@ -179,8 +179,16 @@ function openMenuRefresh() {
   else if (profLoc().office ? !slotsFor(today).length : asapDay() !== today) { cb.hidden = false; cb.textContent = `Na dziś już nie zdążymy — możesz zamówić na ${dayLabel(nextWorkday(today), today).long}.`; }
   else cb.hidden = true;
   $('#leadInfo').textContent = profLoc().office ? 'Zamów najpóźniej 90 minut przed dostawą. Dowozimy Pon–Sob 11:30–18:30.' : `Dowozimy do: ${profLoc().name}.`;
+  renderHalfPromo();
   renderMenu();
   updateCartbar();
+}
+function renderHalfPromo() {
+  const ex = findItem('schabowy') || CATEGORIES[0].items[0];
+  $('#halfPromo').innerHTML = `<span class="hp-badge"><b>½</b><small>−30%</small></span>
+    <span class="hp-title">Mniejszy głód? <em>Pół porcji</em> taniej</span>
+    <span class="hp-ex">np. ${esc(ex.name)}: <s>${zl(ex.price)}</s> → <b>${zl(halfPrice(ex))}</b></span>
+    <span class="hp-go">Każde danie — wybierz „Pół porcji” →</span>`;
 }
 $('#whereBtn').addEventListener('click', openStart);
 
@@ -192,7 +200,7 @@ function dishHTML(it) {
     <div class="dish-body">
       <div class="dish-name">${esc(it.name)}</div>
       ${it.desc ? `<div class="dish-desc">${esc(it.desc)}</div>` : ''}
-      <div class="dish-meta"><span class="dish-price price">${zl(it.price)}</span>${tags.map(t => `<span class="dish-tag">${t}</span>`).join('')}${inCart ? `<span class="incart">${inCart} w koszyku</span>` : ''}</div>
+      <div class="dish-meta"><span class="dish-price price">${zl(it.price)}</span>${it.half ? `<span class="dish-half price">½ porcji ${zl(halfPrice(it))}</span>` : ''}${tags.map(t => `<span class="dish-tag">${t}</span>`).join('')}${inCart ? `<span class="incart">${inCart} w koszyku</span>` : ''}</div>
     </div>
     ${it.img ? `<div class="dish-thumb"><img src="img/sm/${esc(it.img)}" alt="" loading="lazy" decoding="async" width="84" height="84"><span class="plus">+</span></div>` : ''}
     <span class="dish-add" aria-hidden="true">+</span>
@@ -243,6 +251,7 @@ function jumpTo(e) {
 }
 $('#chips').addEventListener('click', jumpTo);
 $('#tiles').addEventListener('click', jumpTo);
+$('#halfPromo').addEventListener('click', jumpTo);
 let chipObs;
 function watchChips() {
   chipObs && chipObs.disconnect();
@@ -303,6 +312,13 @@ function renderDish() {
   let h = '';
   if (it.img) h += `<div class="sheet-img"><img src="img/${esc(it.img)}" alt="${esc(it.name)}" decoding="async" style="background:url(img/sm/${esc(it.img)}) center/cover"></div>`;
   h += `<div class="sheet-title"><h3 id="sheetTitle">${esc(it.name)}</h3>${it.desc ? `<p>${esc(it.desc)}</p>` : ''}<span class="price">${zl(it.price)}</span></div>`;
+  if (it.half) {
+    const base = unitPrice(it, { variant: cur.variant }), half = unitPrice(it, { variant: cur.variant, half: true });
+    h += `<div class="size-seg" role="radiogroup" aria-label="Wielkość porcji">
+      <button type="button" role="radio" data-k="size" data-v="0" aria-checked="${!cur.half}"><b>Cała porcja</b><span>${zl(base)}</span></button>
+      <button type="button" role="radio" data-k="size" data-v="1" aria-checked="${cur.half}"><i class="save">−30%</i><b>Pół porcji</b><span>${zl(half)}</span></button>
+    </div>`;
+  }
 
   if (it.variants) {
     h += `<div class="opt"><div class="opt-head"><b>${esc(it.variants.label)}</b><span>wybierz 1</span></div><div class="opt-list" role="radiogroup">` +
@@ -319,9 +335,6 @@ function renderDish() {
   if (it.extras) {
     h += `<div class="opt"><div class="opt-head"><b>Dodaj do zamówienia</b><span>za dopłatą</span></div><div class="opt-list">` +
       it.extras.map(x => `<button type="button" class="pill" role="checkbox" data-k="extra" data-v="${esc(x.id)}" aria-checked="${cur.extras.includes(x.id)}">${esc(x.name)}<span class="plus-price">+${zl(x.price)}</span></button>`).join('') + '</div></div>';
-  }
-  if (it.half) {
-    h += `<div class="opt"><button type="button" class="toggle-row" data-k="half" role="switch" aria-checked="${cur.half}"><span><b>Pół porcji</b><small>Mniejsza porcja, cena −30%</small></span><span class="switch"></span></button></div>`;
   }
   h += `<div class="opt"><label class="field"><span>Uwagi do dania <small>(opcj.)</small></span><input class="input" id="dishNote" maxlength="120" placeholder="np. bez cebuli, sos osobno" value="${esc(cur.note)}"></label></div>`;
   $('#sheetBody').innerHTML = h;
@@ -346,7 +359,7 @@ $('#sheetBody').addEventListener('click', e => {
   if (k === 'dodatek') { if (v === BEZ_DODATKU) { cur.dodatki = []; cur.noDod = true; } else { cur.dodatki = [v]; cur.noDod = false; } }
   if (k === 'surowka') { const i = cur.surowki.indexOf(v); if (i >= 0) cur.surowki.splice(i, 1); else if (cur.surowki.length < LIMIT_SUROWKI) cur.surowki.push(v); }
   if (k === 'extra') { const i = cur.extras.indexOf(v); if (i >= 0) cur.extras.splice(i, 1); else cur.extras.push(v); }
-  if (k === 'half') cur.half = !cur.half;
+  if (k === 'size') cur.half = v === '1';
   vibrate();
   const st = $('#sheetBody').scrollTop;
   renderDish();
