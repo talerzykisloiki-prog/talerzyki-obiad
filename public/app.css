@@ -397,6 +397,11 @@ fieldset { border: none; }
 .lock-card h2 { font-family: var(--serif); font-weight: 400; font-size: 1.5rem; line-height: 1.2; }
 .lock-card p { color: rgba(237,232,221,.8); }
 
+.loc.pending .loc-txt b, .loc.pending .loc-txt span { display: block; height: 14px; border-radius: 6px; background: linear-gradient(90deg, rgba(237,232,221,.08), rgba(237,232,221,.18), rgba(237,232,221,.08)); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
+.loc.pending .loc-txt b { width: 60%; height: 18px; margin-bottom: 8px; }
+.loc.pending .loc-txt span { width: 40%; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
 /* Toast */
 .toast { position: fixed; left: 50%; bottom: calc(90px + var(--safe-b)); z-index: 120; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; background: var(--text); color: var(--bg-deep); font-weight: 600; font-size: .9rem; padding: .7rem 1.1rem; border-radius: 999px; transition: all .25s var(--ease); white-space: nowrap; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
