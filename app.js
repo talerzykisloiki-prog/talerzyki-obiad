@@ -320,7 +320,7 @@ function renderMenu() {
   }
   $('#cats').innerHTML = cats.map(c => c.html).join('');
   const ile = n => n + ' ' + (n === 1 ? 'danie' : (n % 10 >= 2 && n % 10 <= 4 && (n < 10 || n > 20)) ? 'dania' : 'dań');
-  $('#tiles').innerHTML = cats.map(c => `<a href="#c-${c.id}" data-c="${c.id}" class="${c.id === 'specjaly' ? 'hot' : ''}"><b>${esc(c.name)}</b><span>${c.id === 'specjaly' ? (c.count ? 'tylko dziś · ' + ile(c.count) : 'wczytujemy…') : ile(c.count)}</span></a>`).join('');
+  $('#tiles').innerHTML = cats.map(c => `<a href="#c-${c.id}" data-c="${c.id}" class="${c.id === 'specjaly' ? 'hot' : ''}"><b>${esc(c.name)}</b><span>${c.id === 'specjaly' ? (c.count ? 'tylko dziś · ' + ile(c.count) : 'wczytujemy…') : c.id === 'napoje' ? c.count + ' ' + (c.count === 1 ? 'napój' : 'napojów') : ile(c.count)}</span></a>`).join('');
   $('#chips').innerHTML = cats.map((c, i) => `<a href="#c-${c.id}" class="${i ? '' : 'on'}" data-c="${c.id}">${esc(c.name)}</a>`).join('');
   watchChips();
 }
