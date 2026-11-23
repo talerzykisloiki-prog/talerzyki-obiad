@@ -435,6 +435,25 @@ fieldset { border: none; }
 .size-seg button[aria-checked="true"] { border-color: var(--brass); background: var(--brass-bg); box-shadow: 0 0 0 1px var(--brass) inset; }
 .size-seg .save { position: absolute; top: -9px; right: 10px; font-size: .66rem; font-weight: 800; letter-spacing: .04em; background: var(--brass); color: var(--bg-deep); padding: .15rem .45rem; border-radius: 999px; }
 
+/* ─── Miejsce na zdjęcie, gdy zdjęcia jeszcze nie ma (monogram TS jak w logo) ─── */
+.ph {
+  display: grid; place-items: center; align-content: center; gap: 8px;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(201,165,107,.16), transparent 55%),
+    repeating-linear-gradient(135deg, rgba(201,165,107,.05) 0 6px, transparent 6px 14px),
+    var(--bg-deep);
+  border: 1px solid rgba(201,165,107,.35);
+}
+.ph-mono {
+  display: grid; place-items: center; width: 54px; height: 54px; border-radius: 50%;
+  border: 1px solid var(--brass); color: var(--brass);
+  font-family: var(--serif); font-weight: 500; font-size: 1.35rem; letter-spacing: .02em; line-height: 1;
+  font-variation-settings: "opsz" 72;
+}
+.sheet-img.ph { border-left: none; border-right: none; }
+.sheet-img.ph .ph-mono { width: 92px; height: 92px; font-size: 2.3rem; }
+.sheet-img.ph small { font-size: .76rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+
 /* Toast */
 .toast { position: fixed; left: 50%; bottom: calc(90px + var(--safe-b)); z-index: 120; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; background: var(--text); color: var(--bg-deep); font-weight: 600; font-size: .9rem; padding: .7rem 1.1rem; border-radius: 999px; transition: all .25s var(--ease); white-space: nowrap; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }

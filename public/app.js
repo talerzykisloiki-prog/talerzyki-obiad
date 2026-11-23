@@ -2,8 +2,8 @@ import {
   CATEGORIES, SPECIAL_GROUPS, DODATKI, SUROWKI, LIMIT_DODATKI, LIMIT_SUROWKI,
   findItem, unitPrice, halfPrice, zl, OPEN_FROM, OPEN_TO, LEAD_MIN, SLOT_STEP, PIETRA,
   ASAP,
-} from './menu.js?v=8';
-import { API_URL } from './config.js?v=5';
+} from './menu.js?v=10';
+import { API_URL } from './config.js?v=10';
 
 // Tajny kod miejsca z linku (?m=…). Bez niego nie da się zamówić.
 const URLP = new URLSearchParams(location.search);
@@ -202,7 +202,9 @@ function dishHTML(it) {
       ${it.desc ? `<div class="dish-desc">${esc(it.desc)}</div>` : ''}
       <div class="dish-meta"><span class="dish-price price">${zl(it.price)}</span>${it.half ? `<span class="dish-half price">½ porcji ${zl(halfPrice(it))}</span>` : ''}${tags.map(t => `<span class="dish-tag">${t}</span>`).join('')}${inCart ? `<span class="incart">${inCart} w koszyku</span>` : ''}</div>
     </div>
-    ${it.img ? `<div class="dish-thumb"><img src="img/sm/${esc(it.img)}" alt="" loading="lazy" decoding="async" width="84" height="84"><span class="plus">+</span></div>` : ''}
+    ${it.img
+      ? `<div class="dish-thumb"><img src="img/sm/${esc(it.img)}" alt="" loading="lazy" decoding="async" width="84" height="84"><span class="plus">+</span></div>`
+      : `<div class="dish-thumb ph" aria-hidden="true"><span class="ph-mono">TS</span><span class="plus">+</span></div>`}
     <span class="dish-add" aria-hidden="true">+</span>
   </button>`;
 }
@@ -307,7 +309,9 @@ function openDish(it, editIdx = null) {
 function renderDish() {
   const { it } = cur;
   let h = '';
-  if (it.img) h += `<div class="sheet-img"><img src="img/${esc(it.img)}" alt="${esc(it.name)}" decoding="async" style="background:url(img/sm/${esc(it.img)}) center/cover"></div>`;
+  h += it.img
+    ? `<div class="sheet-img"><img src="img/${esc(it.img)}" alt="${esc(it.name)}" decoding="async" style="background:url(img/sm/${esc(it.img)}) center/cover"></div>`
+    : `<div class="sheet-img ph" aria-hidden="true"><span class="ph-mono">TS</span><small>Zdjęcie wkrótce</small></div>`;
   h += `<div class="sheet-title"><h3 id="sheetTitle">${esc(it.name)}</h3>${it.desc ? `<p>${esc(it.desc)}</p>` : ''}<span class="price">${zl(it.price)}</span></div>`;
   if (it.half) {
     const base = unitPrice(it, { variant: cur.variant }), half = unitPrice(it, { variant: cur.variant, half: true });
