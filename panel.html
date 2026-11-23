@@ -63,6 +63,7 @@
     .locf { grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); padding: 6px 0 0; }
     .locf button { font-size: .8rem; min-height: 38px; }
     .o-loc { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bg-deep); background: var(--brass); padding: .2rem .55rem; border-radius: 999px; margin-bottom: 6px; }
+    .o-day { display: block; margin-top: 6px; font-family: var(--sans); font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--bg-deep); background: #8FB4E0; padding: .2rem .5rem; border-radius: 6px; width: max-content; }
     .o-when.asap { font-size: 1.25rem; color: var(--brass-hi); }
     .o-pay-cash { color: var(--ok); }
     .live { display: inline-flex; align-items: center; gap: .4rem; font-size: .78rem; color: var(--muted); }
@@ -98,7 +99,7 @@
 
     <div class="p-pad">
       <div id="tOrders">
-        <div class="bar"><h2 id="ordersTitle">Dziś</h2><input type="date" id="day" aria-label="Dzień" /></div>
+        <div class="bar"><h2 id="ordersTitle">Dziś i następny dzień</h2><input type="date" id="day" aria-label="Dzień" /></div>
         <div class="tabs locf" id="locFilter" role="tablist" aria-label="Miejsce"></div>
         <div class="sumrow" id="sumrow"></div>
         <div id="orders"></div>
@@ -211,10 +212,10 @@ function renderList(orders) {
   $('#sumrow').innerHTML = `<span>Zamówień: <b>${active.length}</b></span><span>Razem: <b>${zl(sum)}</b></span>` +
     Object.entries(portions).sort((a, b) => b[1] - a[1]).map(([n, q]) => `<span><b>${q}×</b> ${esc(n)}</span>`).join('');
   if (!orders.length) { $('#orders').innerHTML = '<p class="empty">Brak zamówień na ten dzień.</p>'; return; }
-  const sorted = [...orders].sort((a, b) => (a.status === 'dostarczone' || a.status === 'anulowane') - (b.status === 'dostarczone' || b.status === 'anulowane') || (isAsap(b) - isAsap(a)) || a.time.localeCompare(b.time) || (a.createdAt > b.createdAt ? 1 : -1));
+  const sorted = [...orders].sort((a, b) => (a.day > b.day) - (a.day < b.day) || (a.status === 'dostarczone' || a.status === 'anulowane') - (b.status === 'dostarczone' || b.status === 'anulowane') || (isAsap(b) - isAsap(a)) || a.time.localeCompare(b.time) || (a.createdAt > b.createdAt ? 1 : -1));
   $('#orders').innerHTML = sorted.map(o => `<article class="order s-${o.status}">
     <div class="o-top">
-      <div class="o-when ${isAsap(o) ? 'asap' : ''}">${isAsap(o) ? 'Od razu' : esc(o.time)}<small>#${esc(o.code)} · złożone ${new Date(o.createdAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Warsaw' })}</small></div>
+      <div class="o-when ${isAsap(o) ? 'asap' : ''}">${isAsap(o) ? 'Od razu' : esc(o.time)}${o.day !== today() ? `<span class="o-day">${dayTag(o.day)}</span>` : ''}<small>#${esc(o.code)} · złożone ${new Date(o.createdAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Warsaw' })}</small></div>
       <div class="o-where"><span class="o-loc">${esc(o.locName)}</span>${o.customer.floor === null
         ? `<b>${esc(o.customer.name || '—')}</b>`
         : `<b>${floorTxt(o.customer.floor)} · pok. ${esc(o.customer.room)}</b><span>${esc([o.customer.company, o.customer.name].filter(Boolean).join(' · '))}</span>`}</div>
@@ -228,10 +229,18 @@ function renderList(orders) {
     ${o.status !== 'anulowane' ? `<div class="o-status">${STATUSY.map(([k, n]) => `<button data-id="${o.id}" data-s="${k}" aria-pressed="${o.status === k}">${n}</button>`).join('')}</div>` : ''}
   </article>`).join('');
 }
+function nextWorkday(d) { const x = new Date(d + 'T12:00:00Z'); do { x.setUTCDate(x.getUTCDate() + 1); } while (x.getUTCDay() === 0); return x.toISOString().slice(0, 10); }
+const DNI_PL = ['niedziela', 'poniedziałek', 'wtorek', 'środa', 'czwartek', 'piątek', 'sobota'];
+function dayTag(d) { const x = new Date(d + 'T12:00:00Z'); return `na ${DNI_PL[x.getUTCDay()]} ${x.getUTCDate()}.${String(x.getUTCMonth() + 1).padStart(2, '0')}`; }
 async function load(silent) {
   const day = $('#day').value || today();
   try {
-    const d = await api('zamowienia', { day });
+    let d;
+    if (day === today()) {
+      // Widok „Dziś” pokazuje też zamówienia na najbliższy dzień roboczy
+      const [a, b] = await Promise.all([api('zamowienia', { day }), api('zamowienia', { day: nextWorkday(day) })]);
+      d = { day, orders: [...a.orders, ...b.orders] };
+    } else d = await api('zamowienia', { day });
     const ids = new Set(d.orders.map(o => o.id));
     if (known && day === today()) { const fresh = d.orders.filter(o => !known.has(o.id)); if (fresh.length) { beep(); toast(`Nowe zamówienie: ${fresh[0].customer.floor === null ? fresh[0].locName + ', ' + fresh[0].customer.name : floorTxt(fresh[0].customer.floor) + ', pok. ' + fresh[0].customer.room}`); } }
     if (day === today()) known = ids;
@@ -239,7 +248,7 @@ async function load(silent) {
     $('#live').textContent = 'odświeżono ' + new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   } catch (e) { if (!silent) toast('Nie udało się pobrać zamówień'); }
 }
-$('#day').addEventListener('change', () => { $('#ordersTitle').textContent = $('#day').value === today() ? 'Dziś' : $('#day').value; load(); });
+$('#day').addEventListener('change', () => { $('#ordersTitle').textContent = $('#day').value === today() ? 'Dziś i następny dzień' : $('#day').value; load(); });
 $('#orders').addEventListener('click', async e => {
   const b = e.target.closest('[data-s],[data-cancel]'); if (!b) return;
   const id = b.dataset.id || b.dataset.cancel, status = b.dataset.s || 'anulowane';
