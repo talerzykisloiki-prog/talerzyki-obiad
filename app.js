@@ -1,8 +1,8 @@
 import {
-  CATEGORIES, GYM_CATEGORIES, SPECIAL_GROUPS, DODATKI, DODATKI_ALL, SUROWKI, LIMIT_DODATKI, LIMIT_SUROWKI,
+  CATEGORIES, PROFILES, profileCategories, SPECIAL_GROUPS, DODATKI, DODATKI_ALL, SUROWKI, LIMIT_DODATKI, LIMIT_SUROWKI,
   findItem, unitPrice, halfPrice, zl, OPEN_FROM, OPEN_TO, LEAD_MIN, SLOT_STEP, PIETRA,
   ASAP, setDiscount, disc,
-} from './menu.js?v=12';
+} from './menu.js?v=13';
 import { API_URL } from './config.js?v=11';
 
 // Tajny kod miejsca z linku (?m=…). Bez niego nie da się zamówić.
@@ -55,6 +55,11 @@ function slotsFor(day) {
   const now = warsawNow();
   if (isSunday(day)) return [];
   const out = [];
+  const ft = fixedTimes();
+  if (!(server.loc || {}).office && ft.length) {
+    for (const x of ft) if (!(day === now.date && toMin(x) < now.minutes + LEAD_MIN)) out.push(x);
+    return out;
+  }
   for (let t = toMin(OPEN_FROM); t <= toMin(OPEN_TO); t += SLOT_STEP) {
     if (day === now.date && t < now.minutes + LEAD_MIN) continue;
     out.push(hhmm(t));
@@ -79,7 +84,10 @@ const allSpecials = () => server.specials;
 const profileId = () => { const l = server.loc || {}; return l.profile || (l.gym ? 'gym' : 'standard'); };
 const isGym = () => profileId() === 'gym';
 const isGaleria = () => profileId() === 'galeria';
-const dodatkiList = () => isGym() ? DODATKI_ALL : DODATKI;
+const isJoga = () => profileId() === 'joga';
+const dodatkiList = it => (it && it.gym) ? DODATKI_ALL : DODATKI;
+const fixedTimes = () => (server.loc || {}).times || [];
+const timed = () => !!(server.loc || {}).office || fixedTimes().length > 0;
 const THEMES = {
   gym: {
     eyebrow: 'Fit obiady z dowozem · Gorzów Wlkp.',
@@ -101,11 +109,21 @@ const THEMES = {
     foot: 'Wszystkie ceny w menu są już o 10% niższe dla zespołu galerii (zaokrąglone do pełnych złotych).',
     doneH: 'Dziękujemy, <em>swoi!</em>',
   },
+  joga: {
+    eyebrow: 'Obiady po zajęciach · Gorzów Wlkp.',
+    title: 'Po macie <em>coś dobrego</em> dla ciała',
+    perks: ['Darmowy dowóz', 'Fit i domowe dania', 'Płacisz przy odbiorze', null],
+    formH: 'Dla kogo ten obiad?',
+    formP: 'Wpisz imię, po nim wydamy zamówienie. Zapamiętamy je na tym telefonie.',
+    note: 'Dla Was po zajęciach',
+    foot: 'Fit menu ma policzone makro (wartości szacunkowe). Masz alergię? Zapytaj nas przed zamówieniem.',
+    doneH: 'Dziękujemy, <em>namaste!</em>',
+  },
 };
 function applyTheme() {
   const id = profileId();
   setDiscount((server.loc || {}).discount | 0);
-  for (const k of ['gym', 'galeria']) document.body.classList.toggle(k, id === k);
+  for (const k of ['gym', 'galeria', 'joga']) document.body.classList.toggle(k, id === k);
   const T = THEMES[id];
   if (!T) return;
   $('.start-hero .eyebrow').textContent = T.eyebrow;
@@ -230,14 +248,19 @@ function openMenuRefresh() {
   $('#dayTitle').textContent = isSunday(today) ? 'Menu' : dayLabel(today, today).title;
   const cb = $('#closedBanner');
   if (!server.open) { cb.hidden = false; cb.textContent = server.message || 'W tej chwili nie przyjmujemy zamówień online. Zadzwoń: 728 343 338.'; }
-  else if (profLoc().office ? !slotsFor(today).length : asapDay() !== today) { cb.hidden = false; cb.textContent = `Na dziś już nie zdążymy. Możesz zamówić na ${dayLabel(nextWorkday(today), today).long}.`; }
+  else if (timed() ? !slotsFor(today).length : asapDay() !== today) { cb.hidden = false; cb.textContent = `Na dziś już nie zdążymy. Możesz zamówić na ${dayLabel(nextWorkday(today), today).long}.`; }
   else cb.hidden = true;
-  $('#leadInfo').textContent = profLoc().office ? 'Zamów najpóźniej 90 minut przed dostawą. Dowozimy Pon.-Sob. 11:30-18:30.' : (isGym() ? `Dowozimy na siłownię: ${profLoc().name}. Zamów rano, dowozimy, jak tylko będzie gotowe.` : isGaleria() ? `Dowozimy do: ${profLoc().name}. Ceny w menu są już o 10% niższe dla Was.` : `Dowozimy do: ${profLoc().name}.`);
+  $('#leadInfo').textContent = (!profLoc().office && fixedTimes().length) ? `Darmowy dowóz do: ${profLoc().name}, o stałych godzinach (${fixedTimes().join(', ')}). Zamów najpóźniej 90 minut wcześniej.` : profLoc().office ? 'Zamów najpóźniej 90 minut przed dostawą. Dowozimy Pon.-Sob. 11:30-18:30.' : (isGym() ? `Dowozimy na siłownię: ${profLoc().name}. Zamów rano, dowozimy, jak tylko będzie gotowe.` : isGaleria() ? `Dowozimy do: ${profLoc().name}. Ceny w menu są już o 10% niższe dla Was.` : `Dowozimy do: ${profLoc().name}.`);
   renderHalfPromo();
   renderMenu();
   updateCartbar();
 }
 function renderHalfPromo() {
+  if (isJoga()) {
+    const ft = fixedTimes();
+    $('#halfPromo').innerHTML = `<span class="hp-badge"><b>🌿</b></span><span class="hp-title">Darmowy dowóz <em>${ft.length ? 'o stałej godzinie' : 'prosto do studia'}</em></span><span class="hp-ex">${ft.length ? 'Wybierz godzinę z listy przy zamówieniu. ' : ''}Fit z policzonym makro albo domowy obiad. Zamów wygodnie w aplikacji.</span><span class="hp-go">Zobacz menu →</span>`;
+    return;
+  }
   if (isGym()) {
     $('#halfPromo').innerHTML = `<span class="hp-badge"><b>💪</b></span><span class="hp-title">Trening zrobiony? <em>Teraz paliwo</em></span><span class="hp-ex">Każde danie z policzonymi kaloriami i makro</span>`;
     return;
@@ -277,8 +300,7 @@ function dishHTML(it) {
 
 function renderMenu() {
   const cats = [];
-  const gym = isGym();
-  const sp = gym ? [] : allSpecials();
+  const sp = (PROFILES[profileId()] || PROFILES.standard).specials ? allSpecials() : [];
   if (sp.length) {
     let h = '';
     for (const g of SPECIAL_GROUPS) {
@@ -290,7 +312,7 @@ function renderMenu() {
       <div class="cat-head"><h2>Specjały <em>dnia</em></h2><span class="badge">tylko dziś</span></div>
       <p class="cat-note">Dania główne z dodatkiem i surówkami w cenie.</p>${h}</section>` });
   }
-  for (const c of (gym ? GYM_CATEGORIES : CATEGORIES)) {
+  for (const c of profileCategories(profileId())) {
     cats.push({ id: c.id, name: c.name, count: c.items.length, html: `<section class="cat" id="c-${c.id}">
       <div class="cat-head"><h2>${esc(c.name)}</h2></div>
       ${c.note ? `<p class="cat-note">${esc(c.note)}</p>` : ''}
@@ -397,7 +419,7 @@ function renderDish() {
   if (it.sides) {
     const dodSel = cur.dodatki.length ? cur.dodatki[0] : (cur.noDod ? BEZ_DODATKU : null);
     h += `<div class="opt"><div class="opt-head"><b>Dodatek</b><span class="free">w cenie · wybierz ${LIMIT_DODATKI}</span></div><div class="opt-list" role="radiogroup">` +
-      [...dodatkiList(), BEZ_DODATKU].map(d => `<button type="button" class="pill" role="radio" data-k="dodatek" data-v="${esc(d)}" aria-checked="${dodSel === d}">${esc(d)}</button>`).join('') + '</div></div>';
+      [...dodatkiList(cur.it), BEZ_DODATKU].map(d => `<button type="button" class="pill" role="radio" data-k="dodatek" data-v="${esc(d)}" aria-checked="${dodSel === d}">${esc(d)}</button>`).join('') + '</div></div>';
     const full = cur.surowki.length >= LIMIT_SUROWKI;
     h += `<div class="opt"><div class="opt-head"><b>Surówki</b><span class="free">w cenie · do ${LIMIT_SUROWKI} (${cur.surowki.length}/${LIMIT_SUROWKI})</span></div><div class="opt-list">` +
       SUROWKI.map(s => { const on = cur.surowki.includes(s); return `<button type="button" class="pill" role="checkbox" data-k="surowka" data-v="${esc(s)}" aria-checked="${on}" ${full && !on ? 'disabled' : ''}>${esc(s)}</button>`; }).join('') + '</div></div>';
@@ -507,7 +529,7 @@ function availableDays() {
   return days;
 }
 function ensureSlot() {
-  if (!profLoc().office) { co.day = asapDay(); co.time = ASAP; if (co.day !== server.today && hasSpecials()) co.day = null; return; }
+  if (!timed()) { co.day = asapDay(); co.time = ASAP; if (co.day !== server.today && hasSpecials()) co.day = null; return; }
   if (co.time === ASAP) co.time = null;
   const days = availableDays();
   let d = days.find(x => x.d === co.day && x.slots.length && !x.blocked) || days.find(x => x.slots.length && !x.blocked);
@@ -543,10 +565,10 @@ function renderCart() {
   // Termin
   ensureSlot();
   const days = availableDays();
-  h += `<div class="sec"><div class="sec-head"><b>${L.office ? 'Na kiedy?' : 'Kiedy dowieziemy?'}</b></div>`;
+  h += `<div class="sec"><div class="sec-head"><b>${timed() ? 'Na kiedy?' : 'Kiedy dowieziemy?'}</b></div>`;
   if (!server.open) {
     h += `<div class="form-err">${esc(server.message || 'W tej chwili nie przyjmujemy zamówień online. Zadzwoń: 728 343 338.')}</div>`;
-  } else if (!L.office) {
+  } else if (!timed()) {
     const d = asapDay();
     h += co.day
       ? `<div class="asap"><svg><use href="#i-clock"/></svg><div><b>${d === server.today ? 'Dziś' : dayLabel(d, server.today).long[0].toUpperCase() + dayLabel(d, server.today).long.slice(1)}, jak najszybciej</b><br>Przywieziemy, jak tylko obiad będzie gotowy. Godziny nie trzeba wybierać.</div></div>`
@@ -666,6 +688,7 @@ function openDone() {
   const pl = o.loc || server.loc || { office: true, name: '' };
   $('#doneWhen').textContent = pl.office
     ? `Przyniesiemy na ${floorTxt(p.floor).toLowerCase()}, pokój ${p.room}, ${dayLabel(o.day, warsawNow().date).long}, ok. ${o.time}.`
+    : (o.time && o.time !== ASAP) ? `Przywieziemy do: ${pl.name}, dla: ${p.name}, ${dayLabel(o.day, warsawNow().date).long}, o ${o.time}.`
     : `Przywieziemy do: ${pl.name}, dla: ${p.name}, ${dayLabel(o.day, warsawNow().date).long}, jak tylko będzie gotowe.`;
   $('#doneCode').textContent = 'Zamówienie #' + o.code;
   $('#doneSum').innerHTML = o.summary.map(s => `<div class="line"><div class="line-body"><div class="line-name">${s.qty}× ${esc(s.name)}</div>${s.opts ? `<div class="line-opts">${esc(s.opts)}</div>` : ''}</div><div class="line-side"><span class="line-sum price">${zl(s.sum)}</span></div></div>`).join('') +

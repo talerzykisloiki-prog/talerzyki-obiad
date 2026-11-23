@@ -539,3 +539,32 @@ body.galeria .half-promo .hp-badge b { font-size: 1.08rem; font-weight: 700; }
 body.galeria .half-promo .hp-ex { color: #EADFF0; }
 body.galeria .cat.special { background: var(--surface); }
 body.galeria .dish-price { color: var(--brass-hi); }
+
+/* ═══ Profil joga (body.joga): ciepły piasek i szałwia, okręgi jak w logo, spokój ═══ */
+body.joga { --bg:#1A1714; --bg-deep:#110F0D; --surface:#262019; --brass:#D9B58A; --brass-hi:#F0D9B8; --brass-bg:rgba(217,181,138,.14); --line:rgba(240,217,184,.15); --line-2:rgba(240,217,184,.28); --ok:#9DBF9A; }
+body.joga .start-hero {
+  background:
+    radial-gradient(70% 60% at 92% 4%, rgba(217,181,138,.26), transparent 62%),
+    radial-gradient(55% 50% at 4% 96%, rgba(130,160,125,.22), transparent 65%),
+    linear-gradient(180deg, var(--bg-deep), var(--bg));
+}
+body.joga .start-hero::before {
+  content: ""; position: absolute; right: -90px; top: 40px; width: 280px; height: 280px; border-radius: 50%; pointer-events: none;
+  border: 1px solid rgba(240,217,184,.18);
+  box-shadow: 0 0 0 36px rgba(240,217,184,.04), 0 0 0 74px rgba(240,217,184,.03);
+}
+body.joga .start-hero > * { position: relative; }
+body.joga .hero-title { font-weight: 300; }
+body.joga .hero-title em { color: var(--brass-hi); }
+body.joga .topbar { background: rgba(26,23,20,.97); }
+body.joga .perks li { background: rgba(17,15,13,.45); }
+body.joga .btn-brass { background: linear-gradient(135deg, #F0D9B8, #D9B58A 60%, #C79F70); color: #1A1714; font-weight: 700; }
+body.joga .loc.static { background: rgba(217,181,138,.1); border-color: rgba(217,181,138,.6); }
+body.joga .loc-txt b { color: #fff; }
+body.joga .loc-txt span, body.joga .loc-txt small { color: #EDE3D4; }
+body.joga .field > span small, body.joga .cat-note, body.joga .start-card p { color: #CFC3B2; }
+body.joga .where { color: var(--brass-hi); border-color: rgba(217,181,138,.55); }
+body.joga .half-promo { background: radial-gradient(120% 140% at 100% 0%, rgba(217,181,138,.28), transparent 60%), radial-gradient(90% 120% at 0% 100%, rgba(130,160,125,.2), transparent 60%), var(--surface); border-color: rgba(217,181,138,.65); }
+body.joga .half-promo .hp-badge { background: linear-gradient(135deg, #F0D9B8, #D9B58A 60%, #C79F70); color: #1A1714; }
+body.joga .half-promo .hp-ex { color: #EDE3D4; }
+body.joga .dish-price { color: var(--brass-hi); }

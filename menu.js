@@ -156,6 +156,31 @@ export const GYM_CATEGORIES = [
   },
 ];
 
+
+// ═══ Napoje (wszędzie) i desery (tylko profil „joga”) ═══
+export const DRINKS = {
+  id: 'napoje', name: 'Napoje',
+  items: [
+    { id: 'nap-cola', name: 'Coca-Cola 330 ml', price: 800, drink: true },
+    { id: 'nap-cola-zero', name: 'Coca-Cola Zero 330 ml', price: 800, drink: true },
+    { id: 'nap-fanta', name: 'Fanta 330 ml', price: 800, drink: true },
+    { id: 'nap-lemoniada', name: 'Lemoniada jabłkowo-cynamonowa', price: 800, drink: true, desc: 'Domowa, orzeźwiająca' },
+    { id: 'nap-kompot', name: 'Kompot owocowy', price: 700, drink: true, desc: 'Z sezonowych owoców' },
+    { id: 'nap-woda', name: 'Woda', price: 500, drink: true,
+      variants: { label: 'Rodzaj', options: [{ name: 'Niegazowana' }, { name: 'Gazowana' }] } },
+  ],
+};
+// price 0 = jeszcze bez ceny, danie niewidoczne i niezamawialne
+export const DESSERTS_JOGA = {
+  id: 'desery', name: 'Desery', note: 'Lekkie i na słodko, po zajęciach',
+  items: [
+    { id: 'des-owsianka', name: 'Owsianka z musem wiśniowym', price: 1500, only: ['joga'],
+      desc: 'Kremowa owsianka z musem wiśniowym' },
+    { id: 'des-chia', name: 'Deser chia', price: 0, only: ['joga'],
+      desc: 'Mus truskawkowo-wiśniowy, skyr naturalny, skyr waniliowy i nasiona chia' },
+  ],
+};
+
 // Grupy specjałów dnia (w tej kolejności w menu i w panelu kuchni)
 export const SPECIAL_GROUPS = [
   { id: 'zupy-mieso', name: 'Zupy gotowane na mięsie', sides: false },
@@ -206,6 +231,7 @@ export function parseSpecials(textByGroup) {
 export function findItem(id, specials) {
   for (const c of CATEGORIES) for (const it of c.items) if (it.id === id) return it;
   for (const c of GYM_CATEGORIES) for (const it of c.items) if (it.id === id) return it;
+  for (const c of [DRINKS, DESSERTS_JOGA]) for (const it of c.items) if (it.id === id) return it;
   return (specials || []).find(s => s.id === id) || null;
 }
 
@@ -228,14 +254,37 @@ export function unitPrice(item, opts = {}) {
 // Typ miejsca w arkuszu „Miejsca” → profil. Nazw miejsc tu NIE ma (publiczny kod).
 //   standard: menu główne · gym: osobne menu fit z makro · galeria: menu główne ze zniżką
 export const PROFILES = {
-  standard: { discount: 0 },
-  gym: { discount: 0 },
-  galeria: { discount: 10 },
+  standard: { discount: 0, specials: true },
+  gym: { discount: 0, specials: false },
+  galeria: { discount: 10, specials: true },
+  joga: { discount: 0, specials: false },
 };
+// Które kategorie widzi dane miejsce (napoje wszędzie na końcu)
+export function profileCategories(profile) {
+  return profileCategoriesRaw(profile).map(c => ({ ...c, items: c.items.filter(i => i.price > 0) })).filter(c => c.items.length);
+}
+function profileCategoriesRaw(profile) {
+  const gymNames = GYM_CATEGORIES.flatMap(c => c.items.map(i => i.name));
+  if (profile === 'gym') return [...GYM_CATEGORIES, DRINKS];
+  if (profile === 'joga') {
+    const main = CATEGORIES.map(c => ({ ...c, items: c.items.filter(i => !gymNames.includes(i.name)) })).filter(c => c.items.length);
+    return [...GYM_CATEGORIES, ...main, DESSERTS_JOGA, DRINKS];
+  }
+  return [...CATEGORIES, DRINKS];
+}
+// Czy dane danie można zamówić w miejscu o danym profilu (serwer odrzuca resztę)
+export function allowedFor(it, profile) {
+  if (it.special) return PROFILES[profile].specials;
+  if (it.only) return it.only.indexOf(profile) >= 0;
+  if (it.gym) return profile === 'gym' || profile === 'joga';
+  if (it.drink) return true;
+  return profile !== 'gym';
+}
 export function profileFromType(typ) {
   typ = String(typ || '');
   if (/si[łl]ow|gym/i.test(typ)) return 'gym';
   if (/galer/i.test(typ)) return 'galeria';
+  if (/jog/i.test(typ)) return 'joga';
   return 'standard';
 }
 
