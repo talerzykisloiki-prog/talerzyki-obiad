@@ -1,4 +1,4 @@
-// Obiad do biura - Talerzyki i Słoiki. Plik wygenerowany 2026-11-23 15:37 (node apps-script/zbuduj.mjs).
+// Obiad do biura - Talerzyki i Słoiki. Plik wygenerowany 2026-11-23 16:05 (node apps-script/zbuduj.mjs).
 // Wklej CAŁOŚĆ do edytora Apps Script (Rozszerzenia → Apps Script) w miejsce kodu.
 
 // ═══════════════════════════════════════════════════════════════
@@ -159,6 +159,31 @@ const GYM_CATEGORIES = [
   },
 ];
 
+
+// ═══ Napoje (wszędzie) i desery (tylko profil „joga”) ═══
+const DRINKS = {
+  id: 'napoje', name: 'Napoje',
+  items: [
+    { id: 'nap-cola', name: 'Coca-Cola 330 ml', price: 800, drink: true },
+    { id: 'nap-cola-zero', name: 'Coca-Cola Zero 330 ml', price: 800, drink: true },
+    { id: 'nap-fanta', name: 'Fanta 330 ml', price: 800, drink: true },
+    { id: 'nap-lemoniada', name: 'Lemoniada jabłkowo-cynamonowa', price: 800, drink: true, desc: 'Domowa, orzeźwiająca' },
+    { id: 'nap-kompot', name: 'Kompot owocowy', price: 700, drink: true, desc: 'Z sezonowych owoców' },
+    { id: 'nap-woda', name: 'Woda', price: 500, drink: true,
+      variants: { label: 'Rodzaj', options: [{ name: 'Niegazowana' }, { name: 'Gazowana' }] } },
+  ],
+};
+// price 0 = jeszcze bez ceny, danie niewidoczne i niezamawialne
+const DESSERTS_JOGA = {
+  id: 'desery', name: 'Desery', note: 'Lekkie i na słodko, po zajęciach',
+  items: [
+    { id: 'des-owsianka', name: 'Owsianka z musem wiśniowym', price: 1500, only: ['joga'],
+      desc: 'Kremowa owsianka z musem wiśniowym' },
+    { id: 'des-chia', name: 'Deser chia', price: 0, only: ['joga'],
+      desc: 'Mus truskawkowo-wiśniowy, skyr naturalny, skyr waniliowy i nasiona chia' },
+  ],
+};
+
 // Grupy specjałów dnia (w tej kolejności w menu i w panelu kuchni)
 const SPECIAL_GROUPS = [
   { id: 'zupy-mieso', name: 'Zupy gotowane na mięsie', sides: false },
@@ -209,6 +234,7 @@ function parseSpecials(textByGroup) {
 function findItem(id, specials) {
   for (const c of CATEGORIES) for (const it of c.items) if (it.id === id) return it;
   for (const c of GYM_CATEGORIES) for (const it of c.items) if (it.id === id) return it;
+  for (const c of [DRINKS, DESSERTS_JOGA]) for (const it of c.items) if (it.id === id) return it;
   return (specials || []).find(s => s.id === id) || null;
 }
 
@@ -231,14 +257,37 @@ function unitPrice(item, opts = {}) {
 // Typ miejsca w arkuszu „Miejsca” → profil. Nazw miejsc tu NIE ma (publiczny kod).
 //   standard: menu główne · gym: osobne menu fit z makro · galeria: menu główne ze zniżką
 const PROFILES = {
-  standard: { discount: 0 },
-  gym: { discount: 0 },
-  galeria: { discount: 10 },
+  standard: { discount: 0, specials: true },
+  gym: { discount: 0, specials: false },
+  galeria: { discount: 10, specials: true },
+  joga: { discount: 0, specials: false },
 };
+// Które kategorie widzi dane miejsce (napoje wszędzie na końcu)
+function profileCategories(profile) {
+  return profileCategoriesRaw(profile).map(c => ({ ...c, items: c.items.filter(i => i.price > 0) })).filter(c => c.items.length);
+}
+function profileCategoriesRaw(profile) {
+  const gymNames = GYM_CATEGORIES.flatMap(c => c.items.map(i => i.name));
+  if (profile === 'gym') return [...GYM_CATEGORIES, DRINKS];
+  if (profile === 'joga') {
+    const main = CATEGORIES.map(c => ({ ...c, items: c.items.filter(i => !gymNames.includes(i.name)) })).filter(c => c.items.length);
+    return [...GYM_CATEGORIES, ...main, DESSERTS_JOGA, DRINKS];
+  }
+  return [...CATEGORIES, DRINKS];
+}
+// Czy dane danie można zamówić w miejscu o danym profilu (serwer odrzuca resztę)
+function allowedFor(it, profile) {
+  if (it.special) return PROFILES[profile].specials;
+  if (it.only) return it.only.indexOf(profile) >= 0;
+  if (it.gym) return profile === 'gym' || profile === 'joga';
+  if (it.drink) return true;
+  return profile !== 'gym';
+}
 function profileFromType(typ) {
   typ = String(typ || '');
   if (/si[łl]ow|gym/i.test(typ)) return 'gym';
   if (/galer/i.test(typ)) return 'galeria';
+  if (/jog/i.test(typ)) return 'joga';
   return 'standard';
 }
 
@@ -313,15 +362,21 @@ function cellStr(v) {
 function miejsca() {
   const sh = sheet(ARK_MIE);
   if (!sh || sh.getLastRow() < 2) return [];
-  return sh.getRange(2, 1, sh.getLastRow() - 1, 5).getValues()
+  return sh.getRange(2, 1, sh.getLastRow() - 1, 7).getValues()
     .filter(r => String(r[0]).trim() && String(r[1]).trim())
     .map(r => ({
       code: String(r[0]).trim(), name: String(r[1]).trim(),
       office: /pi[eę]tr/i.test(String(r[2])),
       profile: profileFromType(r[2]),
       place: String(r[3] || '').trim(),
+      times: parseTimes(r[6]),
       active: !/^(nie|no|false|0)$/i.test(String(r[4] || 'TAK').trim()),
     }));
+}
+// Stałe godziny dostawy z kolumny G („17:00, 17:30”). Puste = „jak najszybciej” / piętra.
+function parseTimes(v) {
+  if (v instanceof Date) return [Utilities.formatDate(v, TZ, 'HH:mm')];
+  return String(v || '').split(/[,;\s]+/).map(t => t.trim()).filter(t => /^\d{1,2}:\d{2}$/.test(t)).map(t => t.length === 4 ? '0' + t : t);
 }
 function miejscePoKodzie(code) {
   code = String(code || '').trim();
@@ -330,8 +385,8 @@ function miejscePoKodzie(code) {
 }
 // To, co widzi klient (bez kodów innych miejsc)
 function publicLoc(m) {
-  return { name: m.name, office: m.office, profile: m.profile, gym: m.profile === 'gym', discount: PROFILES[m.profile].discount, place: m.place,
-    hint: m.office ? 'Dowóz na Twoje piętro o wybranej godzinie' : 'Zamawiasz rano, przywozimy, jak tylko będzie gotowe' };
+  return { name: m.name, office: m.office, profile: m.profile, gym: m.profile === 'gym', discount: PROFILES[m.profile].discount, place: m.place, times: m.times,
+    hint: m.times.length ? 'Darmowy dowóz o stałych godzinach' : m.office ? 'Dowóz na Twoje piętro o wybranej godzinie' : 'Zamawiasz rano, przywozimy, jak tylko będzie gotowe' };
 }
 const LOCKED = { error: 'Ten link jest nieaktywny. Zamówienia tylko przez link od nas. Zadzwoń: 728 343 338.', locked: true };
 
@@ -447,8 +502,16 @@ function placeOrder(body) {
     if (digits > 0 && digits < 9) return { error: 'Sprawdź numer telefonu albo zostaw puste pole.' };
     customer = { loc: loc.name, phone, floor: null, room: '', company: '', name };
     const now0 = warsawNow();
-    day = (isSunday(now0.date) || now0.minutes > toMin(OPEN_TO)) ? nextWorkday(now0.date) : now0.date;
-    time = ASAP;
+    if (loc.times.length) {
+      // stałe godziny dostawy (np. studio): dziś lub następny dzień roboczy, z zapasem czasu
+      day = clean(body.day, 10); time = clean(body.time, 5);
+      const t = /^\d{2}:\d{2}$/.test(time) ? toMin(time) : -1;
+      const dayOk = /^\d{4}-\d{2}-\d{2}$/.test(day) && !isSunday(day) && day >= now0.date && day <= nextWorkday(now0.date);
+      if (loc.times.indexOf(time) < 0 || !dayOk || (day === now0.date && t < now0.minutes + LEAD_MIN - 10)) return { error: 'Ta godzina dostawy jest już niedostępna. Wybierz inną.' };
+    } else {
+      day = (isSunday(now0.date) || now0.minutes > toMin(OPEN_TO)) ? nextWorkday(now0.date) : now0.date;
+      time = ASAP;
+    }
   }
   const payment = PLATNOSCI[body.payment] ? body.payment : 'gotowka';
   if (!Array.isArray(body.items) || !body.items.length) return { error: 'Koszyk jest pusty.' };
@@ -459,7 +522,7 @@ function placeOrder(body) {
   for (const raw of body.items) {
     const it = findItem(raw.id, st.specials);
     if (!it) return { error: 'Któreś danie jest już niedostępne. Odśwież menu.' };
-    if (!!it.gym !== (loc.profile === 'gym')) return { error: 'Któreś danie jest już niedostępne. Odśwież menu.' };
+    if (!allowedFor(it, loc.profile) || !(it.price > 0)) return { error: 'Któreś danie jest już niedostępne. Odśwież menu.' };
     if (it.special && day !== st.today) return { error: 'Specjały dnia można zamówić tylko na dziś.' };
     const qty = Math.min(Math.max(parseInt(raw.qty, 10) || 1, 1), 20);
     const opts = { variant: raw.variant | 0, half: !!raw.half, extras: Array.isArray(raw.extras) ? raw.extras : [] };
@@ -643,9 +706,10 @@ function przygotuj() {
   // Miejsca (tajne linki). Nazw i kodów NIE ma w kodzie - wpisuje się je w tabeli.
   let mi = book.getSheetByName(ARK_MIE) || book.insertSheet(ARK_MIE, 1);
   mi.getRange('A1:F1').setValues([['Kod (tajny)', 'Nazwa', 'Typ', 'Opis (widzi klient)', 'Aktywne', 'Link dla klientów']]).setFontWeight('bold').setBackground('#12211B').setFontColor('#EDE8DD');
+  mi.getRange('G1').setValue('Godziny dostawy (opcjonalnie, np. 17:00, 17:30)').setFontWeight('bold').setBackground('#12211B').setFontColor('#EDE8DD'); mi.getRange(2, 7, 50, 1).setNumberFormat('@'); mi.setColumnWidth(7, 260);
   mi.setFrozenRows(1);
   mi.getRange('A:A').setNumberFormat('@');
-  mi.getRange(2, 3, 50, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['piętra', 'imię', 'siłownia', 'galeria'], true).build());
+  mi.getRange(2, 3, 50, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['piętra', 'imię', 'siłownia', 'galeria', 'joga'], true).build());
   mi.getRange(2, 5, 50, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['TAK', 'NIE'], true).build());
   // separator argumentów zależy od ustawień regionalnych tabeli (pl_PL → „;”)
   const sep = /^(en|ja|ko|zh|th|he|ar)/.test(book.getSpreadsheetLocale()) ? ',' : ';';
