@@ -1,9 +1,9 @@
 import {
-  CATEGORIES, SPECIAL_GROUPS, DODATKI, SUROWKI, LIMIT_DODATKI, LIMIT_SUROWKI,
+  CATEGORIES, GYM_CATEGORIES, SPECIAL_GROUPS, DODATKI, DODATKI_ALL, SUROWKI, LIMIT_DODATKI, LIMIT_SUROWKI,
   findItem, unitPrice, halfPrice, zl, OPEN_FROM, OPEN_TO, LEAD_MIN, SLOT_STEP, PIETRA,
   ASAP,
-} from './menu.js?v=10';
-import { API_URL } from './config.js?v=10';
+} from './menu.js?v=11';
+import { API_URL } from './config.js?v=11';
 
 // Tajny kod miejsca z linku (?m=…). Bez niego nie da się zamówić.
 const URLP = new URLSearchParams(location.search);
@@ -74,6 +74,41 @@ let server = { today: warsawNow().date, specials: [], open: true, message: '' };
 let serverFresh = false; // czy mamy już świeżą odpowiedź z Google
 const allSpecials = () => server.specials;
 
+// ─── Tryb „siłownia”: inne teksty, styl i makro ───
+const isGym = () => !!(server.loc || {}).gym;
+const dodatkiList = () => isGym() ? DODATKI_ALL : DODATKI;
+const GYM_TXT = {
+  eyebrow: 'Fit obiady z dowozem · Gorzów Wlkp.',
+  title: 'Zjedz <em>jak mistrz</em>, trenuj jak bestia',
+  perks: ['Makro policzone', 'Dużo białka', 'Płacisz przy odbiorze'],
+  formH: 'Dla kogo posiłek po treningu?',
+  formP: 'Zapamiętamy imię na tym telefonie. Następnym razem od razu menu.',
+  note: 'Fit menu',
+  foot: 'Wartości odżywcze są szacunkowe (waga porcji po przygotowaniu).',
+  doneH: 'Mocne zamówienie, <em>przyjęte!</em>',
+};
+function applyTheme() {
+  const g = isGym();
+  document.body.classList.toggle('gym', g);
+  if (!g) return;
+  $('.start-hero .eyebrow').textContent = GYM_TXT.eyebrow;
+  $('.hero-title').innerHTML = GYM_TXT.title;
+  document.querySelectorAll('.perks li').forEach((li, i) => { if (GYM_TXT.perks[i]) li.lastChild.textContent = GYM_TXT.perks[i]; else li.hidden = true; });
+  $('#startForm h2').textContent = GYM_TXT.formH;
+  $('#startForm h2 + p').textContent = GYM_TXT.formP;
+  $('#menu .day-head .note').textContent = GYM_TXT.note;
+  $('.menu-foot').innerHTML = `${GYM_TXT.foot}<br>Masz pytanie lub alergię? <a href="tel:+48728343338">Zadzwoń: 728 343 338</a>`;
+  $('#vDone h1').innerHTML = GYM_TXT.doneH;
+}
+const macroLine = m => `<span class="mc k"><b>${m.kcal}</b> kcal</span><span class="mc"><b>${m.b}</b> g białka</span><span class="mc"><b>${m.t}</b> g tł.</span><span class="mc"><b>${m.w}</b> g węgl.</span>`;
+function macroTable(m) {
+  const row = (n, v, u, sub) => `<div class="mt-row${sub ? ' sub' : ''}"><span>${n}</span><b>${v} ${u}</b></div>`;
+  return `<div class="macro-card"><div class="mt-head"><b>Wartości odżywcze</b><span>porcja ${m.g} g</span></div>
+    <div class="mt-big"><div><b>${m.kcal}</b><span>kcal</span></div><div><b>${m.b}</b><span>białko g</span></div><div><b>${m.t}</b><span>tłuszcz g</span></div><div><b>${m.w}</b><span>węgl. g</span></div></div>
+    ${row('Błonnik', m.fib, 'g', true)}
+    <p class="mt-note">Wartości szacunkowe, z gramatur kuchni.${m.noSide ? ' Dodatek wybrany osobno nie jest wliczony (zwykle +130-190 kcal).' : ''}</p></div>`;
+}
+
 // ─── Widoki ───
 function show(view) {
   const b = document.getElementById('boot'); if (b) b.remove();
@@ -106,6 +141,7 @@ function renderFloors() {
 }
 function applyLoc() {
   renderLocs();
+  applyTheme();
   const office = isOffice();
   $('#officeFields').hidden = !office;
   $('#lName').innerHTML = office ? 'Imię <small>(opcj.)</small>' : 'Imię <small>(po nim wydamy zamówienie)</small>';
@@ -171,6 +207,7 @@ const whereShort = () => profLoc().office ? `${floorTxt(profil.floor)} · pok. $
 function asapDay() { const now = warsawNow(); return (isSunday(now.date) || now.minutes > toMin(OPEN_TO)) ? nextWorkday(now.date) : now.date; }
 function openMenu() { openMenuRefresh(); show('vMenu'); }
 function openMenuRefresh() {
+  applyTheme();
   $('#whereTxt').textContent = whereShort();
   const today = server.today;
   $('#dayTitle').textContent = isSunday(today) ? 'Menu' : dayLabel(today, today).title;
@@ -178,12 +215,16 @@ function openMenuRefresh() {
   if (!server.open) { cb.hidden = false; cb.textContent = server.message || 'W tej chwili nie przyjmujemy zamówień online. Zadzwoń: 728 343 338.'; }
   else if (profLoc().office ? !slotsFor(today).length : asapDay() !== today) { cb.hidden = false; cb.textContent = `Na dziś już nie zdążymy. Możesz zamówić na ${dayLabel(nextWorkday(today), today).long}.`; }
   else cb.hidden = true;
-  $('#leadInfo').textContent = profLoc().office ? 'Zamów najpóźniej 90 minut przed dostawą. Dowozimy Pon.-Sob. 11:30-18:30.' : `Dowozimy do: ${profLoc().name}.`;
+  $('#leadInfo').textContent = profLoc().office ? 'Zamów najpóźniej 90 minut przed dostawą. Dowozimy Pon.-Sob. 11:30-18:30.' : (isGym() ? `Dowozimy na siłownię: ${profLoc().name}. Zamów rano, dowozimy, jak tylko będzie gotowe.` : `Dowozimy do: ${profLoc().name}.`);
   renderHalfPromo();
   renderMenu();
   updateCartbar();
 }
 function renderHalfPromo() {
+  if (isGym()) {
+    $('#halfPromo').innerHTML = `<span class="hp-badge"><b>💪</b></span><span class="hp-title">Trening zrobiony? <em>Teraz paliwo</em></span><span class="hp-ex">Każde danie z policzonymi kaloriami i makro</span>`;
+    return;
+  }
   const ex = findItem('schabowy') || CATEGORIES[0].items[0];
   $('#halfPromo').innerHTML = `<span class="hp-badge"><b>½</b><small>−30%</small></span>
     <span class="hp-title">Mniejszy głód? <em>Pół porcji</em> taniej</span>
@@ -200,6 +241,7 @@ function dishHTML(it) {
     <div class="dish-body">
       <div class="dish-name">${esc(it.name)}</div>
       ${it.desc ? `<div class="dish-desc">${esc(it.desc)}</div>` : ''}
+      ${it.macro ? `<div class="dish-macro">${macroLine(it.macro)}</div>` : ''}
       <div class="dish-meta"><span class="dish-price price">${zl(it.price)}</span>${it.half ? `<span class="dish-half price">½ porcji ${zl(halfPrice(it))}</span>` : ''}${tags.map(t => `<span class="dish-tag">${t}</span>`).join('')}${inCart ? `<span class="incart">${inCart} w koszyku</span>` : ''}</div>
     </div>
     ${it.img
@@ -211,7 +253,8 @@ function dishHTML(it) {
 
 function renderMenu() {
   const cats = [];
-  const sp = allSpecials();
+  const gym = isGym();
+  const sp = gym ? [] : allSpecials();
   if (sp.length) {
     let h = '';
     for (const g of SPECIAL_GROUPS) {
@@ -223,7 +266,7 @@ function renderMenu() {
       <div class="cat-head"><h2>Specjały <em>dnia</em></h2><span class="badge">tylko dziś</span></div>
       <p class="cat-note">Dania główne z dodatkiem i surówkami w cenie.</p>${h}</section>` });
   }
-  for (const c of CATEGORIES) {
+  for (const c of (gym ? GYM_CATEGORIES : CATEGORIES)) {
     cats.push({ id: c.id, name: c.name, count: c.items.length, html: `<section class="cat" id="c-${c.id}">
       <div class="cat-head"><h2>${esc(c.name)}</h2></div>
       ${c.note ? `<p class="cat-note">${esc(c.note)}</p>` : ''}
@@ -245,6 +288,7 @@ function jumpTo(e) {
   const a = e.target.closest('a[data-c]'); if (!a) return;
   e.preventDefault();
   const sec = document.getElementById('c-' + a.dataset.c);
+  if (!sec) return;
   const top = sec.getBoundingClientRect().top + window.scrollY - $('.topbar').offsetHeight - 4;
   window.scrollTo({ top, behavior: 'smooth' });
 }
@@ -313,6 +357,7 @@ function renderDish() {
     ? `<div class="sheet-img"><img src="img/${esc(it.img)}" alt="${esc(it.name)}" decoding="async" style="background:url(img/sm/${esc(it.img)}) center/cover"></div>`
     : `<div class="sheet-img ph" aria-hidden="true"><span class="ph-mono">TS</span><small>Zdjęcie wkrótce</small></div>`;
   h += `<div class="sheet-title"><h3 id="sheetTitle">${esc(it.name)}</h3>${it.desc ? `<p>${esc(it.desc)}</p>` : ''}<span class="price">${zl(it.price)}</span></div>`;
+  if (it.macro) h += macroTable(it.macro);
   if (it.half) {
     const base = unitPrice(it, { variant: cur.variant }), half = unitPrice(it, { variant: cur.variant, half: true });
     h += `<div class="size-seg" role="radiogroup" aria-label="Wielkość porcji">
@@ -328,7 +373,7 @@ function renderDish() {
   if (it.sides) {
     const dodSel = cur.dodatki.length ? cur.dodatki[0] : (cur.noDod ? BEZ_DODATKU : null);
     h += `<div class="opt"><div class="opt-head"><b>Dodatek</b><span class="free">w cenie · wybierz ${LIMIT_DODATKI}</span></div><div class="opt-list" role="radiogroup">` +
-      [...DODATKI, BEZ_DODATKU].map(d => `<button type="button" class="pill" role="radio" data-k="dodatek" data-v="${esc(d)}" aria-checked="${dodSel === d}">${esc(d)}</button>`).join('') + '</div></div>';
+      [...dodatkiList(), BEZ_DODATKU].map(d => `<button type="button" class="pill" role="radio" data-k="dodatek" data-v="${esc(d)}" aria-checked="${dodSel === d}">${esc(d)}</button>`).join('') + '</div></div>';
     const full = cur.surowki.length >= LIMIT_SUROWKI;
     h += `<div class="opt"><div class="opt-head"><b>Surówki</b><span class="free">w cenie · do ${LIMIT_SUROWKI} (${cur.surowki.length}/${LIMIT_SUROWKI})</span></div><div class="opt-list">` +
       SUROWKI.map(s => { const on = cur.surowki.includes(s); return `<button type="button" class="pill" role="checkbox" data-k="surowka" data-v="${esc(s)}" aria-checked="${on}" ${full && !on ? 'disabled' : ''}>${esc(s)}</button>`; }).join('') + '</div></div>';

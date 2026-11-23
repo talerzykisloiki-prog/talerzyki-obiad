@@ -129,6 +129,33 @@ export const CATEGORIES = [
 // Pół porcji - wszystkie dania
 for (const c of CATEGORIES) for (const it of c.items) it.half = true;
 
+// ═══ Menu dla siłowni (miejsca typu „siłownia”) ═══
+// Tylko te 4 dania. Wartości odżywcze SZACUNKOWE (tabele składu żywności, gramatury od kuchni).
+// kcal, b = białko, t = tłuszcz, w = węglowodany, fib = błonnik (g); g = waga porcji (g).
+// Na siłowni dodatki mają też makaron. Ceny: TYMCZASOWE (do potwierdzenia przez właściciela).
+export const DODATEK_MAKARON = 'Makaron';
+export const DODATKI_ALL = [...DODATKI, DODATEK_MAKARON];
+
+export const GYM_CATEGORIES = [
+  {
+    id: 'fit', name: 'Fit menu', note: 'Policzone makro. Białko robi robotę',
+    items: [
+      { id: 'gym-makaron-szpinak', name: 'Makaron ze szpinakiem i grillowanym filetem', price: 3200, gym: true,
+        desc: 'Makaron 270 g, grillowany filet z kurczaka 175 g (waga surowego), szpinak 80 g, śmietankowy sos 100 g',
+        macro: { g: 625, kcal: 747, b: 57, t: 23, w: 77, fib: 7 } },
+      { id: 'gym-fit-gyros', name: 'Fit Gyros', price: 3400, gym: true,
+        desc: 'Grillowany kurczak, mix sałat, warzywa, gorący ryż, lekki sos gyros i winegret',
+        macro: { g: 535, kcal: 706, b: 53, t: 37, w: 32, fib: 4 } },
+      { id: 'gym-klopsiki', name: 'Klopsiki drobiowo-cukiniowe w sosie koperkowym', price: 3600, sides: true, gym: true,
+        desc: 'Klopsiki z 160 g fileta z kurczaka i cukinii, sos koperkowy na śmietance 80 g, surówka 80 g. Dodatek wybierasz sam',
+        macro: { g: 330, kcal: 353, b: 39, t: 16, w: 10, fib: 2, noSide: true } },
+      { id: 'gym-filet-grzyb', name: 'Filet grillowany w sosie grzybowym', price: 3600, gym: true,
+        desc: 'Grillowany filet z kurczaka 175 g (waga surowego), sos grzybowy 100 g, kasza gryczana 150 g, surówka z białej kapusty i marchewki 80 g',
+        macro: { g: 505, kcal: 513, b: 48, t: 18, w: 39, fib: 6 } },
+    ],
+  },
+];
+
 // Grupy specjałów dnia (w tej kolejności w menu i w panelu kuchni)
 export const SPECIAL_GROUPS = [
   { id: 'zupy-mieso', name: 'Zupy gotowane na mięsie', sides: false },
@@ -178,6 +205,7 @@ export function parseSpecials(textByGroup) {
 
 export function findItem(id, specials) {
   for (const c of CATEGORIES) for (const it of c.items) if (it.id === id) return it;
+  for (const c of GYM_CATEGORIES) for (const it of c.items) if (it.id === id) return it;
   return (specials || []).find(s => s.id === id) || null;
 }
 
