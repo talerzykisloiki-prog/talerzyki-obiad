@@ -2,7 +2,7 @@ import {
   CATEGORIES, PROFILES, profileCategories, SPECIAL_GROUPS, DODATKI, DODATKI_ALL, SUROWKI, LIMIT_DODATKI, LIMIT_SUROWKI,
   findItem, unitPrice, halfPrice, zl, OPEN_FROM, OPEN_TO, LEAD_MIN, SLOT_STEP, PIETRA,
   ASAP, setDiscount, disc,
-} from './menu.js?v=14';
+} from './menu.js?v=15';
 import { API_URL } from './config.js?v=11';
 
 // Tajny kod miejsca z linku (?m=…). Bez niego nie da się zamówić.
