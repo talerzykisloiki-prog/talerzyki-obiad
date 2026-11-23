@@ -2,7 +2,7 @@ import {
   CATEGORIES, PROFILES, profileCategories, SPECIAL_GROUPS, DODATKI, DODATKI_ALL, SUROWKI, LIMIT_DODATKI, LIMIT_SUROWKI,
   findItem, unitPrice, halfPrice, zl, OPEN_FROM, OPEN_TO, LEAD_MIN, SLOT_STEP, PIETRA,
   ASAP, setDiscount, disc,
-} from './menu.js?v=13';
+} from './menu.js?v=14';
 import { API_URL } from './config.js?v=11';
 
 // Tajny kod miejsca z linku (?m=…). Bez niego nie da się zamówić.
@@ -124,6 +124,8 @@ function applyTheme() {
   const id = profileId();
   setDiscount((server.loc || {}).discount | 0);
   for (const k of ['gym', 'galeria', 'joga']) document.body.classList.toggle(k, id === k);
+  const logo = $('#studioLogo');
+  if (logo) { logo.hidden = id !== 'joga'; if (id === 'joga' && !logo.getAttribute('src')) logo.src = logo.dataset.src; }
   const T = THEMES[id];
   if (!T) return;
   $('.start-hero .eyebrow').textContent = T.eyebrow;

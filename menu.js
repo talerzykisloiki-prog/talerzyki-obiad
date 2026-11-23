@@ -176,7 +176,7 @@ export const DESSERTS_JOGA = {
   items: [
     { id: 'des-owsianka', name: 'Owsianka z musem wiśniowym', price: 1500, only: ['joga'],
       desc: 'Kremowa owsianka z musem wiśniowym' },
-    { id: 'des-chia', name: 'Deser chia', price: 0, only: ['joga'],
+    { id: 'des-chia', name: 'Deser chia', price: 1500, only: ['joga'],
       desc: 'Mus truskawkowo-wiśniowy, skyr naturalny, skyr waniliowy i nasiona chia' },
   ],
 };

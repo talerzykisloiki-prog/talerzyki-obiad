@@ -568,3 +568,4 @@ body.joga .half-promo { background: radial-gradient(120% 140% at 100% 0%, rgba(2
 body.joga .half-promo .hp-badge { background: linear-gradient(135deg, #F0D9B8, #D9B58A 60%, #C79F70); color: #1A1714; }
 body.joga .half-promo .hp-ex { color: #EDE3D4; }
 body.joga .dish-price { color: var(--brass-hi); }
+body.joga .studio-logo { display: block; width: 72px; height: 72px; margin: 0 0 14px; border-radius: 50%; box-shadow: 0 0 0 3px rgba(217,181,138,.45), 0 6px 22px rgba(0,0,0,.35); }
