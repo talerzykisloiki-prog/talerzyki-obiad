@@ -174,8 +174,10 @@ export const DRINKS = {
 export const DESSERTS_JOGA = {
   id: 'desery', name: 'Desery', note: 'Lekkie i na słodko, po zajęciach',
   items: [
-    { id: 'des-owsianka', name: 'Owsianka z musem wiśniowym', price: 1500, only: ['joga'],
-      desc: 'Kremowa owsianka z musem wiśniowym' },
+    { id: 'des-owsianka-banan', name: 'Owsianka bananowa z orzechami', price: 1600, only: ['joga'],
+      desc: 'Kremowa owsianka z bananem i orzechami' },
+    { id: 'des-owsianka-szarlotka', name: 'Owsianka szarlotkowa z kruszonką', price: 1600, only: ['joga'],
+      desc: 'Kremowa owsianka w smaku szarlotki, z kruszonką' },
     { id: 'des-chia', name: 'Deser chia', price: 1500, only: ['joga'],
       desc: 'Mus truskawkowo-wiśniowy, skyr naturalny, skyr waniliowy i nasiona chia' },
   ],
