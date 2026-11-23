@@ -498,3 +498,44 @@ body.gym .loc-txt b { color: #fff; font-weight: 600; }
 body.gym .loc-txt span, body.gym .loc-txt small { color: #E3E8E3; }
 body.gym .field > span small, body.gym .cat-note, body.gym .start-card p { color: #C4CCC6; }
 body.gym .where { color: #EAF7B8; border-color: rgba(200,241,53,.55); }
+
+/* ═══ Profil galeria (body.galeria): śliwka i szampańskie złoto, festiwalowo, „dla swoich” ═══ */
+body.galeria { --bg:#1C1021; --bg-deep:#120816; --surface:#2A1833; --brass:#EBC77E; --brass-hi:#F8E3B0; --brass-bg:rgba(235,199,126,.14); --line:rgba(248,227,176,.16); --line-2:rgba(248,227,176,.28); }
+body.galeria .start-hero {
+  background:
+    radial-gradient(60% 50% at 88% 6%, rgba(235,199,126,.30), transparent 62%),
+    radial-gradient(50% 45% at 6% 92%, rgba(214,102,160,.26), transparent 65%),
+    radial-gradient(40% 35% at 55% 30%, rgba(150,110,230,.16), transparent 70%),
+    linear-gradient(180deg, var(--bg-deep), var(--bg));
+}
+body.galeria .start-hero::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .55;
+  background-image:
+    radial-gradient(circle, #F8E3B0 0 1.2px, transparent 1.6px),
+    radial-gradient(circle, #fff 0 .9px, transparent 1.3px),
+    radial-gradient(circle, #EBC77E 0 1.5px, transparent 2px);
+  background-size: 120px 140px, 170px 110px, 210px 190px;
+  background-position: 10px 20px, 70px 60px, 130px 15px;
+  animation: twinkle 5s ease-in-out infinite alternate;
+}
+@keyframes twinkle { from { opacity: .25; } to { opacity: .75; } }
+body.galeria .start-hero > * { position: relative; }
+body.galeria .hero-title { font-style: italic; }
+body.galeria .hero-title em { font-style: normal; color: var(--brass-hi); text-shadow: 0 0 22px rgba(235,199,126,.45); }
+body.galeria .topbar { background: rgba(28,16,33,.97); }
+body.galeria .perks li { background: rgba(18,8,22,.45); }
+body.galeria .btn-brass { background: linear-gradient(135deg, #F8E3B0, #EBC77E 55%, #D9A95A); color: #1C1021; font-weight: 700; }
+body.galeria .loc.static { background: rgba(235,199,126,.09); border-color: rgba(235,199,126,.6); }
+body.galeria .loc-txt b { color: #fff; }
+body.galeria .loc-txt span, body.galeria .loc-txt small { color: #EADFF0; }
+body.galeria .field > span small, body.galeria .cat-note, body.galeria .start-card p { color: #CDBFD6; }
+body.galeria .where { color: var(--brass-hi); border-color: rgba(235,199,126,.55); }
+body.galeria .half-promo {
+  background: radial-gradient(120% 140% at 100% 0%, rgba(235,199,126,.30), transparent 60%), radial-gradient(90% 120% at 0% 100%, rgba(214,102,160,.22), transparent 60%), var(--surface);
+  border-color: rgba(235,199,126,.7);
+}
+body.galeria .half-promo .hp-badge { background: linear-gradient(135deg, #F8E3B0, #EBC77E 55%, #D9A95A); color: #1C1021; box-shadow: 0 0 0 4px rgba(235,199,126,.18); }
+body.galeria .half-promo .hp-badge b { font-size: 1.08rem; font-weight: 700; }
+body.galeria .half-promo .hp-ex { color: #EADFF0; }
+body.galeria .cat.special { background: var(--surface); }
+body.galeria .dish-price { color: var(--brass-hi); }

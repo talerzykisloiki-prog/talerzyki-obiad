@@ -1,8 +1,8 @@
 import {
   CATEGORIES, GYM_CATEGORIES, SPECIAL_GROUPS, DODATKI, DODATKI_ALL, SUROWKI, LIMIT_DODATKI, LIMIT_SUROWKI,
   findItem, unitPrice, halfPrice, zl, OPEN_FROM, OPEN_TO, LEAD_MIN, SLOT_STEP, PIETRA,
-  ASAP,
-} from './menu.js?v=11';
+  ASAP, setDiscount, disc,
+} from './menu.js?v=12';
 import { API_URL } from './config.js?v=11';
 
 // Tajny kod miejsca z linku (?m=…). Bez niego nie da się zamówić.
@@ -74,31 +74,48 @@ let server = { today: warsawNow().date, specials: [], open: true, message: '' };
 let serverFresh = false; // czy mamy już świeżą odpowiedź z Google
 const allSpecials = () => server.specials;
 
-// ─── Tryb „siłownia”: inne teksty, styl i makro ───
-const isGym = () => !!(server.loc || {}).gym;
+// ─── Profile miejsc: standard / gym (menu fit z makro) / galeria (menu główne −10%) ───
+// Profil i zniżkę podaje serwer (z typu miejsca w arkuszu). Tu tylko teksty i styl.
+const profileId = () => { const l = server.loc || {}; return l.profile || (l.gym ? 'gym' : 'standard'); };
+const isGym = () => profileId() === 'gym';
+const isGaleria = () => profileId() === 'galeria';
 const dodatkiList = () => isGym() ? DODATKI_ALL : DODATKI;
-const GYM_TXT = {
-  eyebrow: 'Fit obiady z dowozem · Gorzów Wlkp.',
-  title: 'Zjedz <em>jak mistrz</em>, trenuj jak bestia',
-  perks: ['Makro policzone', 'Dużo białka', 'Płacisz przy odbiorze'],
-  formH: 'Dla kogo posiłek po treningu?',
-  formP: 'Zapamiętamy imię na tym telefonie. Następnym razem od razu menu.',
-  note: 'Fit menu',
-  foot: 'Wartości odżywcze są szacunkowe (waga porcji po przygotowaniu).',
-  doneH: 'Mocne zamówienie, <em>przyjęte!</em>',
+const THEMES = {
+  gym: {
+    eyebrow: 'Fit obiady z dowozem · Gorzów Wlkp.',
+    title: 'Zjedz <em>jak mistrz</em>, trenuj jak bestia',
+    perks: ['Makro policzone', 'Dużo białka', 'Płacisz przy odbiorze'],
+    formH: 'Dla kogo posiłek po treningu?',
+    formP: 'Zapamiętamy imię na tym telefonie. Następnym razem od razu menu.',
+    note: 'Fit menu',
+    foot: 'Wartości odżywcze są szacunkowe (waga porcji po przygotowaniu).',
+    doneH: 'Mocne zamówienie, <em>przyjęte!</em>',
+  },
+  galeria: {
+    eyebrow: 'Dla zespołu galerii · Gorzów Wlkp.',
+    title: 'Obiad <em>dla swoich</em>, w cenach tylko dla Was',
+    perks: ['Ceny niższe o 10%', 'Dowóz prosto do galerii', 'Płacisz przy odbiorze', null],
+    formH: 'Dla kogo ten obiad?',
+    formP: 'Wpisz imię i sklep albo stanowisko w galerii, po tym Cię znajdziemy. Zapamiętamy to na tym telefonie.',
+    note: 'Menu dla galerii',
+    foot: 'Wszystkie ceny w menu są już o 10% niższe dla zespołu galerii (zaokrąglone do pełnych złotych).',
+    doneH: 'Dziękujemy, <em>swoi!</em>',
+  },
 };
 function applyTheme() {
-  const g = isGym();
-  document.body.classList.toggle('gym', g);
-  if (!g) return;
-  $('.start-hero .eyebrow').textContent = GYM_TXT.eyebrow;
-  $('.hero-title').innerHTML = GYM_TXT.title;
-  document.querySelectorAll('.perks li').forEach((li, i) => { if (GYM_TXT.perks[i]) li.lastChild.textContent = GYM_TXT.perks[i]; else li.hidden = true; });
-  $('#startForm h2').textContent = GYM_TXT.formH;
-  $('#startForm h2 + p').textContent = GYM_TXT.formP;
-  $('#menu .day-head .note').textContent = GYM_TXT.note;
-  $('.menu-foot').innerHTML = `${GYM_TXT.foot}<br>Masz pytanie lub alergię? <a href="tel:+48728343338">Zadzwoń: 728 343 338</a>`;
-  $('#vDone h1').innerHTML = GYM_TXT.doneH;
+  const id = profileId();
+  setDiscount((server.loc || {}).discount | 0);
+  for (const k of ['gym', 'galeria']) document.body.classList.toggle(k, id === k);
+  const T = THEMES[id];
+  if (!T) return;
+  $('.start-hero .eyebrow').textContent = T.eyebrow;
+  $('.hero-title').innerHTML = T.title;
+  document.querySelectorAll('.perks li').forEach((li, i) => { const p = T.perks[i]; if (p) li.lastChild.textContent = p; else if (p === undefined) li.hidden = true; });
+  $('#startForm h2').textContent = T.formH;
+  $('#startForm h2 + p').textContent = T.formP;
+  $('#menu .day-head .note').textContent = T.note;
+  $('.menu-foot').innerHTML = `${T.foot}<br>Masz pytanie lub alergię? <a href="tel:+48728343338">Zadzwoń: 728 343 338</a>`;
+  $('#vDone h1').innerHTML = T.doneH;
 }
 const macroLine = m => `<span class="mc k"><b>${m.kcal}</b> kcal</span><span class="mc"><b>${m.b}</b> g białka</span><span class="mc"><b>${m.t}</b> g tł.</span><span class="mc"><b>${m.w}</b> g węgl.</span>`;
 function macroTable(m) {
@@ -144,7 +161,7 @@ function applyLoc() {
   applyTheme();
   const office = isOffice();
   $('#officeFields').hidden = !office;
-  $('#lName').innerHTML = office ? 'Imię <small>(opcj.)</small>' : 'Imię <small>(po nim wydamy zamówienie)</small>';
+  $('#lName').innerHTML = office ? 'Imię <small>(opcj.)</small>' : isGaleria() ? 'Imię i sklep <small>(po tym Cię znajdziemy)</small>' : 'Imię <small>(po nim wydamy zamówienie)</small>';
   $('#lPhone').innerHTML = office ? 'Numer telefonu' : 'Numer telefonu <small>(opcj.)</small>';
   for (const id of ['#eName', '#ePhone', '#eFloor', '#eRoom']) $(id).hidden = true;
 }
@@ -215,7 +232,7 @@ function openMenuRefresh() {
   if (!server.open) { cb.hidden = false; cb.textContent = server.message || 'W tej chwili nie przyjmujemy zamówień online. Zadzwoń: 728 343 338.'; }
   else if (profLoc().office ? !slotsFor(today).length : asapDay() !== today) { cb.hidden = false; cb.textContent = `Na dziś już nie zdążymy. Możesz zamówić na ${dayLabel(nextWorkday(today), today).long}.`; }
   else cb.hidden = true;
-  $('#leadInfo').textContent = profLoc().office ? 'Zamów najpóźniej 90 minut przed dostawą. Dowozimy Pon.-Sob. 11:30-18:30.' : (isGym() ? `Dowozimy na siłownię: ${profLoc().name}. Zamów rano, dowozimy, jak tylko będzie gotowe.` : `Dowozimy do: ${profLoc().name}.`);
+  $('#leadInfo').textContent = profLoc().office ? 'Zamów najpóźniej 90 minut przed dostawą. Dowozimy Pon.-Sob. 11:30-18:30.' : (isGym() ? `Dowozimy na siłownię: ${profLoc().name}. Zamów rano, dowozimy, jak tylko będzie gotowe.` : isGaleria() ? `Dowozimy do: ${profLoc().name}. Ceny w menu są już o 10% niższe dla Was.` : `Dowozimy do: ${profLoc().name}.`);
   renderHalfPromo();
   renderMenu();
   updateCartbar();
@@ -226,6 +243,13 @@ function renderHalfPromo() {
     return;
   }
   const ex = findItem('schabowy') || CATEGORIES[0].items[0];
+  if (isGaleria()) {
+    $('#halfPromo').innerHTML = `<span class="hp-badge"><b>−10%</b></span>
+    <span class="hp-title">Jesteście z galerii? <em>To ceny dla swoich</em></span>
+    <span class="hp-ex">Wszystko w menu jest już o 10% tańsze. Nic nie musisz liczyć ani podawać.</span>
+    <span class="hp-go">A pół porcji jest jeszcze o 30% tańsze →</span>`;
+    return;
+  }
   $('#halfPromo').innerHTML = `<span class="hp-badge"><b>½</b><small>−30%</small></span>
     <span class="hp-title">Mniejszy głód? <em>Pół porcji</em> taniej</span>
     <span class="hp-ex">np. ${esc(ex.name)}: <s>${zl(ex.price)}</s> → <b>${zl(halfPrice(ex))}</b></span>
@@ -242,7 +266,7 @@ function dishHTML(it) {
       <div class="dish-name">${esc(it.name)}</div>
       ${it.desc ? `<div class="dish-desc">${esc(it.desc)}</div>` : ''}
       ${it.macro ? `<div class="dish-macro">${macroLine(it.macro)}</div>` : ''}
-      <div class="dish-meta"><span class="dish-price price">${zl(it.price)}</span>${it.half ? `<span class="dish-half price">½ porcji ${zl(halfPrice(it))}</span>` : ''}${tags.map(t => `<span class="dish-tag">${t}</span>`).join('')}${inCart ? `<span class="incart">${inCart} w koszyku</span>` : ''}</div>
+      <div class="dish-meta"><span class="dish-price price">${zl(disc(it.price))}</span>${it.half ? `<span class="dish-half price">½ porcji ${zl(halfPrice(it))}</span>` : ''}${tags.map(t => `<span class="dish-tag">${t}</span>`).join('')}${inCart ? `<span class="incart">${inCart} w koszyku</span>` : ''}</div>
     </div>
     ${it.img
       ? `<div class="dish-thumb"><img src="img/sm/${esc(it.img)}" alt="" loading="lazy" decoding="async" width="84" height="84"><span class="plus">+</span></div>`
@@ -356,7 +380,7 @@ function renderDish() {
   h += it.img
     ? `<div class="sheet-img"><img src="img/${esc(it.img)}" alt="${esc(it.name)}" decoding="async" style="background:url(img/sm/${esc(it.img)}) center/cover"></div>`
     : `<div class="sheet-img ph" aria-hidden="true"><span class="ph-mono">TS</span><small>Zdjęcie wkrótce</small></div>`;
-  h += `<div class="sheet-title"><h3 id="sheetTitle">${esc(it.name)}</h3>${it.desc ? `<p>${esc(it.desc)}</p>` : ''}<span class="price">${zl(it.price)}</span></div>`;
+  h += `<div class="sheet-title"><h3 id="sheetTitle">${esc(it.name)}</h3>${it.desc ? `<p>${esc(it.desc)}</p>` : ''}<span class="price">${zl(disc(it.price))}</span></div>`;
   if (it.macro) h += macroTable(it.macro);
   if (it.half) {
     const base = unitPrice(it, { variant: cur.variant }), half = unitPrice(it, { variant: cur.variant, half: true });
@@ -380,7 +404,7 @@ function renderDish() {
   }
   if (it.extras) {
     h += `<div class="opt"><div class="opt-head"><b>Dodaj do zamówienia</b><span>za dopłatą</span></div><div class="opt-list">` +
-      it.extras.map(x => `<button type="button" class="pill" role="checkbox" data-k="extra" data-v="${esc(x.id)}" aria-checked="${cur.extras.includes(x.id)}">${esc(x.name)}<span class="plus-price">+${zl(x.price)}</span></button>`).join('') + '</div></div>';
+      it.extras.map(x => `<button type="button" class="pill" role="checkbox" data-k="extra" data-v="${esc(x.id)}" aria-checked="${cur.extras.includes(x.id)}">${esc(x.name)}<span class="plus-price">+${zl(disc(x.price))}</span></button>`).join('') + '</div></div>';
   }
   h += `<div class="opt"><label class="field"><span>Uwagi do dania <small>(opcj.)</small></span><input class="input" id="dishNote" maxlength="120" placeholder="np. bez cebuli, sos osobno" value="${esc(cur.note)}"></label></div>`;
   $('#sheetBody').innerHTML = h;
