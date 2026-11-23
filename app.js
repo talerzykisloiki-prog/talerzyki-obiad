@@ -124,6 +124,8 @@ function applyTheme() {
   const id = profileId();
   setDiscount((server.loc || {}).discount | 0);
   for (const k of ['gym', 'galeria', 'joga']) document.body.classList.toggle(k, id === k);
+  const hero = document.querySelector('.hero-photo img');
+  if (hero && (id === 'gym' || id === 'joga')) { hero.src = 'img/salatka-kurczak.webp'; hero.alt = 'Sałatka z grillowanym kurczakiem'; hero.style.objectPosition = '50% 50%'; }
   const logo = $('#studioLogo');
   if (logo) { logo.hidden = id !== 'joga'; if (id === 'joga' && !logo.getAttribute('src')) logo.src = logo.dataset.src; }
   const T = THEMES[id];
