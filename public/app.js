@@ -93,7 +93,7 @@ const THEMES = {
   },
   galeria: {
     eyebrow: 'Dla zespołu galerii · Gorzów Wlkp.',
-    title: 'Obiad <em>dla swoich</em>, w cenach tylko dla Was',
+    title: 'Obiad <em>dla swoich</em>, w&nbsp;cenach tylko dla&nbsp;Was',
     perks: ['Ceny niższe o 10%', 'Dowóz prosto do galerii', 'Płacisz przy odbiorze', null],
     formH: 'Dla kogo ten obiad?',
     formP: 'Wpisz imię i sklep albo stanowisko w galerii, po tym Cię znajdziemy. Zapamiętamy to na tym telefonie.',
