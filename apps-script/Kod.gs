@@ -1,4 +1,4 @@
-// Obiad do biura - Talerzyki i Słoiki. Plik wygenerowany 2026-11-23 13:21 (node apps-script/zbuduj.mjs).
+// Obiad do biura - Talerzyki i Słoiki. Plik wygenerowany 2026-11-23 15:37 (node apps-script/zbuduj.mjs).
 // Wklej CAŁOŚĆ do edytora Apps Script (Rozszerzenia → Apps Script) w miejsce kodu.
 
 // ═══════════════════════════════════════════════════════════════
@@ -220,10 +220,34 @@ function unitPrice(item, opts = {}) {
     p += v.delta || 0;
   }
   if (item.half && opts.half) p = Math.round(p * (1 - POL_PORCJI_RABAT) / 100) * 100;
+  p = disc(p);
   if (item.extras && Array.isArray(opts.extras)) {
-    for (const e of item.extras) if (opts.extras.includes(e.id)) p += e.price;
+    for (const e of item.extras) if (opts.extras.includes(e.id)) p += disc(e.price);
   }
   return p;
+}
+
+// ─── Profile miejsc: ten sam kod, różne menu / zniżki / motyw ───
+// Typ miejsca w arkuszu „Miejsca” → profil. Nazw miejsc tu NIE ma (publiczny kod).
+//   standard: menu główne · gym: osobne menu fit z makro · galeria: menu główne ze zniżką
+const PROFILES = {
+  standard: { discount: 0 },
+  gym: { discount: 0 },
+  galeria: { discount: 10 },
+};
+function profileFromType(typ) {
+  typ = String(typ || '');
+  if (/si[łl]ow|gym/i.test(typ)) return 'gym';
+  if (/galer/i.test(typ)) return 'galeria';
+  return 'standard';
+}
+
+// Zniżka procentowa dla bieżącego miejsca (ustawia strona i skrypt po rozpoznaniu miejsca).
+// Zaokrąglenie do pełnych złotych: od 50 gr w górę, do 49 gr w dół.
+let DISCOUNT = 0;
+function setDiscount(percent) { DISCOUNT = Math.max(0, Math.min(90, percent | 0)); }
+function disc(grosze) {
+  return DISCOUNT ? Math.floor((grosze * (100 - DISCOUNT) + 5000) / 10000) * 100 : grosze;
 }
 
 // Cena pół porcji samego dania (bez dopłat)
@@ -294,7 +318,7 @@ function miejsca() {
     .map(r => ({
       code: String(r[0]).trim(), name: String(r[1]).trim(),
       office: /pi[eę]tr/i.test(String(r[2])),
-      gym: /si[łl]ow|gym/i.test(String(r[2])),
+      profile: profileFromType(r[2]),
       place: String(r[3] || '').trim(),
       active: !/^(nie|no|false|0)$/i.test(String(r[4] || 'TAK').trim()),
     }));
@@ -306,7 +330,7 @@ function miejscePoKodzie(code) {
 }
 // To, co widzi klient (bez kodów innych miejsc)
 function publicLoc(m) {
-  return { name: m.name, office: m.office, gym: !!m.gym, place: m.place,
+  return { name: m.name, office: m.office, profile: m.profile, gym: m.profile === 'gym', discount: PROFILES[m.profile].discount, place: m.place,
     hint: m.office ? 'Dowóz na Twoje piętro o wybranej godzinie' : 'Zamawiasz rano, przywozimy, jak tylko będzie gotowe' };
 }
 const LOCKED = { error: 'Ten link jest nieaktywny. Zamówienia tylko przez link od nas. Zadzwoń: 728 343 338.', locked: true };
@@ -418,7 +442,7 @@ function placeOrder(body) {
     day = clean(body.day, 10); time = clean(body.time, 5);
     if (!slotOk(day, time)) return { error: 'Ta godzina dostawy jest już niedostępna. Wybierz inną.' };
   } else {
-    const name = clean(c.name, 40);
+    const name = clean(c.name, 60);
     if (!name) return { error: 'Wpisz imię, po nim wydamy zamówienie.' };
     if (digits > 0 && digits < 9) return { error: 'Sprawdź numer telefonu albo zostaw puste pole.' };
     customer = { loc: loc.name, phone, floor: null, room: '', company: '', name };
@@ -431,10 +455,11 @@ function placeOrder(body) {
   if (body.items.length > 40) return { error: 'Za dużo pozycji, zadzwoń do nas.' };
 
   const items = []; let total = 0;
+  setDiscount(PROFILES[loc.profile].discount);
   for (const raw of body.items) {
     const it = findItem(raw.id, st.specials);
     if (!it) return { error: 'Któreś danie jest już niedostępne. Odśwież menu.' };
-    if (!!it.gym !== !!loc.gym) return { error: 'Któreś danie jest już niedostępne. Odśwież menu.' };
+    if (!!it.gym !== (loc.profile === 'gym')) return { error: 'Któreś danie jest już niedostępne. Odśwież menu.' };
     if (it.special && day !== st.today) return { error: 'Specjały dnia można zamówić tylko na dziś.' };
     const qty = Math.min(Math.max(parseInt(raw.qty, 10) || 1, 1), 20);
     const opts = { variant: raw.variant | 0, half: !!raw.half, extras: Array.isArray(raw.extras) ? raw.extras : [] };
@@ -477,7 +502,7 @@ function placeOrder(body) {
     return t;
   }).join('\n');
   const note = clean(body.note, 300);
-  const dane = { customer, items, payment, payLabel, note, createdAt: new Date().toISOString() };
+  const dane = { customer, items, payment, payLabel, note, createdAt: new Date().toISOString(), discount: PROFILES[loc.profile].discount };
 
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
@@ -488,7 +513,7 @@ function placeOrder(body) {
 
   telegram('🍽 Nowe zamówienie #' + code + '\n' + loc.name + (loc.office ? ' · ' + (customer.floor === 0 ? 'parter' : 'piętro ' + customer.floor) + ' · pokój ' + customer.room : '') +
     '\n👤 ' + (customer.name || '(bez imienia)') + (phone ? ' · 📞 ' + phone : '') + '\n🕐 ' + (day === now.date ? 'dziś ' : day + ' ') + time +
-    '\n\n' + opis + '\n\nRazem: ' + zl(total) + ' · ' + payLabel + (note ? '\nUwagi: ' + note : ''));
+    '\n\n' + opis + '\n\nRazem: ' + zl(total) + (PROFILES[loc.profile].discount ? ' (cena po zniżce ' + PROFILES[loc.profile].discount + '%)' : '') + ' · ' + payLabel + (note ? '\nUwagi: ' + note : ''));
 
   return { id, code, total, day, time, payLabel };
 }
@@ -620,7 +645,7 @@ function przygotuj() {
   mi.getRange('A1:F1').setValues([['Kod (tajny)', 'Nazwa', 'Typ', 'Opis (widzi klient)', 'Aktywne', 'Link dla klientów']]).setFontWeight('bold').setBackground('#12211B').setFontColor('#EDE8DD');
   mi.setFrozenRows(1);
   mi.getRange('A:A').setNumberFormat('@');
-  mi.getRange(2, 3, 50, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['piętra', 'imię', 'siłownia'], true).build());
+  mi.getRange(2, 3, 50, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['piętra', 'imię', 'siłownia', 'galeria'], true).build());
   mi.getRange(2, 5, 50, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['TAK', 'NIE'], true).build());
   // separator argumentów zależy od ustawień regionalnych tabeli (pl_PL → „;”)
   const sep = /^(en|ja|ko|zh|th|he|ar)/.test(book.getSpreadsheetLocale()) ? ',' : ';';

@@ -217,10 +217,34 @@ export function unitPrice(item, opts = {}) {
     p += v.delta || 0;
   }
   if (item.half && opts.half) p = Math.round(p * (1 - POL_PORCJI_RABAT) / 100) * 100;
+  p = disc(p);
   if (item.extras && Array.isArray(opts.extras)) {
-    for (const e of item.extras) if (opts.extras.includes(e.id)) p += e.price;
+    for (const e of item.extras) if (opts.extras.includes(e.id)) p += disc(e.price);
   }
   return p;
+}
+
+// ─── Profile miejsc: ten sam kod, różne menu / zniżki / motyw ───
+// Typ miejsca w arkuszu „Miejsca” → profil. Nazw miejsc tu NIE ma (publiczny kod).
+//   standard: menu główne · gym: osobne menu fit z makro · galeria: menu główne ze zniżką
+export const PROFILES = {
+  standard: { discount: 0 },
+  gym: { discount: 0 },
+  galeria: { discount: 10 },
+};
+export function profileFromType(typ) {
+  typ = String(typ || '');
+  if (/si[łl]ow|gym/i.test(typ)) return 'gym';
+  if (/galer/i.test(typ)) return 'galeria';
+  return 'standard';
+}
+
+// Zniżka procentowa dla bieżącego miejsca (ustawia strona i skrypt po rozpoznaniu miejsca).
+// Zaokrąglenie do pełnych złotych: od 50 gr w górę, do 49 gr w dół.
+let DISCOUNT = 0;
+export function setDiscount(percent) { DISCOUNT = Math.max(0, Math.min(90, percent | 0)); }
+export function disc(grosze) {
+  return DISCOUNT ? Math.floor((grosze * (100 - DISCOUNT) + 5000) / 10000) * 100 : grosze;
 }
 
 // Cena pół porcji samego dania (bez dopłat)
