@@ -491,3 +491,10 @@ body.gym .btn-brass { color: #0D0F0E; font-weight: 700; text-transform: uppercas
 .mt-row { display: flex; justify-content: space-between; padding: 8px 2px 0; font-size: .85rem; color: var(--muted); }
 .mt-row b { color: var(--text); font-weight: 600; }
 .mt-note { margin: 10px 0 0; font-size: .72rem; color: var(--muted); line-height: 1.4; }
+
+/* Siłownia: czytelniejsza karta miejsca i drobny tekst */
+body.gym .loc.static { background: rgba(200,241,53,.07); border-color: rgba(200,241,53,.6); }
+body.gym .loc-txt b { color: #fff; font-weight: 600; }
+body.gym .loc-txt span, body.gym .loc-txt small { color: #E3E8E3; }
+body.gym .field > span small, body.gym .cat-note, body.gym .start-card p { color: #C4CCC6; }
+body.gym .where { color: #EAF7B8; border-color: rgba(200,241,53,.55); }
