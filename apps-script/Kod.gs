@@ -1,4 +1,4 @@
-// Obiad do biura - Talerzyki i Słoiki. Plik wygenerowany 2026-11-23 10:25 (node apps-script/zbuduj.mjs).
+// Obiad do biura - Talerzyki i Słoiki. Plik wygenerowany 2026-11-23 13:21 (node apps-script/zbuduj.mjs).
 // Wklej CAŁOŚĆ do edytora Apps Script (Rozszerzenia → Apps Script) w miejsce kodu.
 
 // ═══════════════════════════════════════════════════════════════
@@ -132,6 +132,33 @@ const CATEGORIES = [
 // Pół porcji - wszystkie dania
 for (const c of CATEGORIES) for (const it of c.items) it.half = true;
 
+// ═══ Menu dla siłowni (miejsca typu „siłownia”) ═══
+// Tylko te 4 dania. Wartości odżywcze SZACUNKOWE (tabele składu żywności, gramatury od kuchni).
+// kcal, b = białko, t = tłuszcz, w = węglowodany, fib = błonnik (g); g = waga porcji (g).
+// Na siłowni dodatki mają też makaron. Ceny: TYMCZASOWE (do potwierdzenia przez właściciela).
+const DODATEK_MAKARON = 'Makaron';
+const DODATKI_ALL = [...DODATKI, DODATEK_MAKARON];
+
+const GYM_CATEGORIES = [
+  {
+    id: 'fit', name: 'Fit menu', note: 'Policzone makro. Białko robi robotę',
+    items: [
+      { id: 'gym-makaron-szpinak', name: 'Makaron ze szpinakiem i grillowanym filetem', price: 3200, gym: true,
+        desc: 'Makaron 270 g, grillowany filet z kurczaka 175 g (waga surowego), szpinak 80 g, śmietankowy sos 100 g',
+        macro: { g: 625, kcal: 747, b: 57, t: 23, w: 77, fib: 7 } },
+      { id: 'gym-fit-gyros', name: 'Fit Gyros', price: 3400, gym: true,
+        desc: 'Grillowany kurczak, mix sałat, warzywa, gorący ryż, lekki sos gyros i winegret',
+        macro: { g: 535, kcal: 706, b: 53, t: 37, w: 32, fib: 4 } },
+      { id: 'gym-klopsiki', name: 'Klopsiki drobiowo-cukiniowe w sosie koperkowym', price: 3600, sides: true, gym: true,
+        desc: 'Klopsiki z 160 g fileta z kurczaka i cukinii, sos koperkowy na śmietance 80 g, surówka 80 g. Dodatek wybierasz sam',
+        macro: { g: 330, kcal: 353, b: 39, t: 16, w: 10, fib: 2, noSide: true } },
+      { id: 'gym-filet-grzyb', name: 'Filet grillowany w sosie grzybowym', price: 3600, gym: true,
+        desc: 'Grillowany filet z kurczaka 175 g (waga surowego), sos grzybowy 100 g, kasza gryczana 150 g, surówka z białej kapusty i marchewki 80 g',
+        macro: { g: 505, kcal: 513, b: 48, t: 18, w: 39, fib: 6 } },
+    ],
+  },
+];
+
 // Grupy specjałów dnia (w tej kolejności w menu i w panelu kuchni)
 const SPECIAL_GROUPS = [
   { id: 'zupy-mieso', name: 'Zupy gotowane na mięsie', sides: false },
@@ -181,6 +208,7 @@ function parseSpecials(textByGroup) {
 
 function findItem(id, specials) {
   for (const c of CATEGORIES) for (const it of c.items) if (it.id === id) return it;
+  for (const c of GYM_CATEGORIES) for (const it of c.items) if (it.id === id) return it;
   return (specials || []).find(s => s.id === id) || null;
 }
 
@@ -266,6 +294,7 @@ function miejsca() {
     .map(r => ({
       code: String(r[0]).trim(), name: String(r[1]).trim(),
       office: /pi[eę]tr/i.test(String(r[2])),
+      gym: /si[łl]ow|gym/i.test(String(r[2])),
       place: String(r[3] || '').trim(),
       active: !/^(nie|no|false|0)$/i.test(String(r[4] || 'TAK').trim()),
     }));
@@ -277,7 +306,7 @@ function miejscePoKodzie(code) {
 }
 // To, co widzi klient (bez kodów innych miejsc)
 function publicLoc(m) {
-  return { name: m.name, office: m.office, place: m.place,
+  return { name: m.name, office: m.office, gym: !!m.gym, place: m.place,
     hint: m.office ? 'Dowóz na Twoje piętro o wybranej godzinie' : 'Zamawiasz rano, przywozimy, jak tylko będzie gotowe' };
 }
 const LOCKED = { error: 'Ten link jest nieaktywny. Zamówienia tylko przez link od nas. Zadzwoń: 728 343 338.', locked: true };
@@ -405,6 +434,7 @@ function placeOrder(body) {
   for (const raw of body.items) {
     const it = findItem(raw.id, st.specials);
     if (!it) return { error: 'Któreś danie jest już niedostępne. Odśwież menu.' };
+    if (!!it.gym !== !!loc.gym) return { error: 'Któreś danie jest już niedostępne. Odśwież menu.' };
     if (it.special && day !== st.today) return { error: 'Specjały dnia można zamówić tylko na dziś.' };
     const qty = Math.min(Math.max(parseInt(raw.qty, 10) || 1, 1), 20);
     const opts = { variant: raw.variant | 0, half: !!raw.half, extras: Array.isArray(raw.extras) ? raw.extras : [] };
@@ -412,7 +442,7 @@ function placeOrder(body) {
     if (it.variants) line.variant = (it.variants.options[opts.variant] || it.variants.options[0]).name;
     if (it.half && opts.half) line.half = true;
     if (it.sides) {
-      line.dodatki = (Array.isArray(raw.dodatki) ? raw.dodatki : []).filter(d => DODATKI.indexOf(d) >= 0).slice(0, LIMIT_DODATKI);
+      line.dodatki = (Array.isArray(raw.dodatki) ? raw.dodatki : []).filter(d => DODATKI_ALL.indexOf(d) >= 0).slice(0, LIMIT_DODATKI);
       line.surowki = (Array.isArray(raw.surowki) ? raw.surowki : []).filter(d => SUROWKI.indexOf(d) >= 0).slice(0, LIMIT_SUROWKI);
     }
     if (it.extras) line.extras = it.extras.filter(x => opts.extras.indexOf(x.id) >= 0).map(x => x.name);
@@ -590,7 +620,7 @@ function przygotuj() {
   mi.getRange('A1:F1').setValues([['Kod (tajny)', 'Nazwa', 'Typ', 'Opis (widzi klient)', 'Aktywne', 'Link dla klientów']]).setFontWeight('bold').setBackground('#12211B').setFontColor('#EDE8DD');
   mi.setFrozenRows(1);
   mi.getRange('A:A').setNumberFormat('@');
-  mi.getRange(2, 3, 50, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['piętra', 'imię'], true).build());
+  mi.getRange(2, 3, 50, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['piętra', 'imię', 'siłownia'], true).build());
   mi.getRange(2, 5, 50, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['TAK', 'NIE'], true).build());
   // separator argumentów zależy od ustawień regionalnych tabeli (pl_PL → „;”)
   const sep = /^(en|ja|ko|zh|th|he|ar)/.test(book.getSpreadsheetLocale()) ? ',' : ';';

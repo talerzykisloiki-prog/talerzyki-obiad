@@ -51,6 +51,7 @@ function miejsca() {
     .map(r => ({
       code: String(r[0]).trim(), name: String(r[1]).trim(),
       office: /pi[eę]tr/i.test(String(r[2])),
+      gym: /si[łl]ow|gym/i.test(String(r[2])),
       place: String(r[3] || '').trim(),
       active: !/^(nie|no|false|0)$/i.test(String(r[4] || 'TAK').trim()),
     }));
@@ -62,7 +63,7 @@ function miejscePoKodzie(code) {
 }
 // To, co widzi klient (bez kodów innych miejsc)
 function publicLoc(m) {
-  return { name: m.name, office: m.office, place: m.place,
+  return { name: m.name, office: m.office, gym: !!m.gym, place: m.place,
     hint: m.office ? 'Dowóz na Twoje piętro o wybranej godzinie' : 'Zamawiasz rano, przywozimy, jak tylko będzie gotowe' };
 }
 const LOCKED = { error: 'Ten link jest nieaktywny. Zamówienia tylko przez link od nas. Zadzwoń: 728 343 338.', locked: true };
@@ -190,6 +191,7 @@ function placeOrder(body) {
   for (const raw of body.items) {
     const it = findItem(raw.id, st.specials);
     if (!it) return { error: 'Któreś danie jest już niedostępne. Odśwież menu.' };
+    if (!!it.gym !== !!loc.gym) return { error: 'Któreś danie jest już niedostępne. Odśwież menu.' };
     if (it.special && day !== st.today) return { error: 'Specjały dnia można zamówić tylko na dziś.' };
     const qty = Math.min(Math.max(parseInt(raw.qty, 10) || 1, 1), 20);
     const opts = { variant: raw.variant | 0, half: !!raw.half, extras: Array.isArray(raw.extras) ? raw.extras : [] };
@@ -197,7 +199,7 @@ function placeOrder(body) {
     if (it.variants) line.variant = (it.variants.options[opts.variant] || it.variants.options[0]).name;
     if (it.half && opts.half) line.half = true;
     if (it.sides) {
-      line.dodatki = (Array.isArray(raw.dodatki) ? raw.dodatki : []).filter(d => DODATKI.indexOf(d) >= 0).slice(0, LIMIT_DODATKI);
+      line.dodatki = (Array.isArray(raw.dodatki) ? raw.dodatki : []).filter(d => DODATKI_ALL.indexOf(d) >= 0).slice(0, LIMIT_DODATKI);
       line.surowki = (Array.isArray(raw.surowki) ? raw.surowki : []).filter(d => SUROWKI.indexOf(d) >= 0).slice(0, LIMIT_SUROWKI);
     }
     if (it.extras) line.extras = it.extras.filter(x => opts.extras.indexOf(x.id) >= 0).map(x => x.name);
@@ -375,7 +377,7 @@ function przygotuj() {
   mi.getRange('A1:F1').setValues([['Kod (tajny)', 'Nazwa', 'Typ', 'Opis (widzi klient)', 'Aktywne', 'Link dla klientów']]).setFontWeight('bold').setBackground('#12211B').setFontColor('#EDE8DD');
   mi.setFrozenRows(1);
   mi.getRange('A:A').setNumberFormat('@');
-  mi.getRange(2, 3, 50, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['piętra', 'imię'], true).build());
+  mi.getRange(2, 3, 50, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['piętra', 'imię', 'siłownia'], true).build());
   mi.getRange(2, 5, 50, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['TAK', 'NIE'], true).build());
   // separator argumentów zależy od ustawień regionalnych tabeli (pl_PL → „;”)
   const sep = /^(en|ja|ko|zh|th|he|ar)/.test(book.getSpreadsheetLocale()) ? ',' : ';';

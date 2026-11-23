@@ -470,3 +470,24 @@ fieldset { border: none; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ═══ Tryb siłownia (body.gym): ciemniej, kwaśna limonka, mocne nagłówki ═══ */
+body.gym { --bg:#0D0F0E; --bg-deep:#070908; --surface:#171B19; --brass:#C8F135; --brass-hi:#DBFF5C; --brass-bg:rgba(200,241,53,.12); }
+body.gym .hero-title, body.gym .cat-head h2, body.gym .day-head h1, body.gym .done-hero h1 { text-transform: uppercase; letter-spacing: .01em; font-weight: 600; }
+body.gym .hero-title em, body.gym .done-hero h1 em { font-style: normal; color: var(--brass); }
+body.gym .btn-brass { color: #0D0F0E; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.dish-macro { display: flex; flex-wrap: wrap; gap: .3rem .35rem; margin: .45rem 0 .1rem; }
+.dish-macro .mc { font-size: .72rem; color: var(--muted); border: 1px solid var(--line); border-radius: 8px; padding: .12rem .42rem; }
+.dish-macro .mc b { color: var(--text); font-weight: 700; }
+.dish-macro .mc.k { border-color: var(--brass); color: var(--brass); }
+.dish-macro .mc.k b { color: var(--brass); }
+.macro-card { margin: 4px 0 14px; padding: 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+.mt-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.mt-head span { color: var(--muted); font-size: .8rem; }
+.mt-big { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center; }
+.mt-big div { background: var(--bg-deep); border-radius: 10px; padding: 9px 2px; }
+.mt-big b { display: block; font-size: 1.25rem; color: var(--brass); font-variant-numeric: tabular-nums; }
+.mt-big span { font-size: .66rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.mt-row { display: flex; justify-content: space-between; padding: 8px 2px 0; font-size: .85rem; color: var(--muted); }
+.mt-row b { color: var(--text); font-weight: 600; }
+.mt-note { margin: 10px 0 0; font-size: .72rem; color: var(--muted); line-height: 1.4; }
