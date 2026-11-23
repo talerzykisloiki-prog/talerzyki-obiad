@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// Menu „Obiad do biura” — Talerzyki i Słoiki
+// Menu „Obiad do biura” - Talerzyki i Słoiki
 // Wspólny plik: używa go strona (przeglądarka) i funkcja zamówień
 // (serwer liczy cenę jeszcze raz z tego pliku, więc ceny są tylko tutaj).
 // Ceny w groszach: 3400 = 34,00 zł.
@@ -44,7 +44,7 @@ export const POL_PORCJI_RABAT = 0.30;
 // extras:   dopłaty do zaznaczenia
 export const CATEGORIES = [
   {
-    id: 'obiady', name: 'Dania mięsne', note: 'Dodatek i surówki w cenie — wybierasz, jakie lubisz',
+    id: 'obiady', name: 'Dania mięsne', note: 'Dodatek i surówki w cenie. Wybierasz, jakie lubisz',
     items: [
       { id: 'kotlety-mielone', name: 'Kotlety mielone', price: 3400, sides: true, half: true, img: 'kotlety-mielone-z-karkowki.webp',
         desc: 'Soczyste kotlety mielone (2 szt.)',
@@ -119,14 +119,14 @@ export const CATEGORIES = [
         variants: { label: 'Nadzienie', options: [{ name: 'Z twarogiem' }, { name: 'Z czekoladą' }, { name: 'Z prażonym jabłkiem' }, { name: 'Z dżemem truskawkowym' }] } },
       { id: 'nal-orzech', name: 'Naleśniki orzechowe', price: 2400,
         desc: '2 szt. z masłem orzechowym, prażonym jabłkiem i polewą czekoladową' },
-      { id: 'ciasto-dnia', name: 'Ciasto dnia', price: 1600, desc: 'Domowe wypieki — zapytamy, co dziś jest' },
+      { id: 'ciasto-dnia', name: 'Ciasto dnia', price: 1600, desc: 'Domowe wypieki. Zapytamy, co dziś jest' },
       { id: 'sernik-keto', name: 'Sernik keto', price: 1800, desc: 'Bez cukru i pszenicy, z liofilizowanymi malinami' },
       { id: 'ciastko', name: 'Ciastko', price: 500, desc: 'Kruche maślane ciastko z dodatkami' },
     ],
   },
 ];
 
-// Pół porcji — wszystkie dania
+// Pół porcji - wszystkie dania
 for (const c of CATEGORIES) for (const it of c.items) it.half = true;
 
 // Grupy specjałów dnia (w tej kolejności w menu i w panelu kuchni)
@@ -139,7 +139,7 @@ export const SPECIAL_GROUPS = [
   { id: 'ryba', name: 'Ryba', sides: true },
 ];
 
-// Domyślne specjały (piątek 20.11.2026) — kuchnia zmienia je w panelu.
+// Domyślne specjały (piątek 20.11.2026) - kuchnia zmienia je w panelu.
 // Linia: „nazwa | cena” ; dopisek „| bez dodatków” wyłącza wybór dodatków.
 export const DEFAULT_SPECIALS_TEXT = {
   'zupy-mieso': 'Barszcz ukraiński na kurczaku | 16\nZupa indyjska curry na kurczaku | 16',
@@ -202,7 +202,7 @@ export function zl(grosze) {
   return (grosze / 100).toFixed(2).replace('.', ',') + ' zł';
 }
 
-// Godziny przyjmowania zamówień (Pon–Sob 11:00–19:00, czas Polski)
+// Godziny przyjmowania zamówień (Pon-Sob 11:00-19:00, czas Polski)
 export const OPEN_FROM = '11:30';   // pierwsza dostawa
 export const OPEN_TO = '18:30';     // ostatnia dostawa
 export const LEAD_MIN = 90;         // zamówienia do 90 min przed dowozem
