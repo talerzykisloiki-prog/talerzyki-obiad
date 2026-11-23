@@ -10,7 +10,7 @@ const menu = readFileSync(join(here, '../public/menu.js'), 'utf8').replace(/^exp
 const zaplecze = readFileSync(join(here, 'zaplecze.js'), 'utf8');
 const stamp = new Date().toISOString().slice(0, 16).replace('T', ' ');
 writeFileSync(join(here, 'Kod.gs'),
-  `// Obiad do biura — Talerzyki i Słoiki. Plik wygenerowany ${stamp} (node apps-script/zbuduj.mjs).\n` +
+  `// Obiad do biura - Talerzyki i Słoiki. Plik wygenerowany ${stamp} (node apps-script/zbuduj.mjs).\n` +
   `// Wklej CAŁOŚĆ do edytora Apps Script (Rozszerzenia → Apps Script) w miejsce kodu.\n\n` +
   menu + '\n\n' + zaplecze);
 console.log('Zapisano apps-script/Kod.gs');

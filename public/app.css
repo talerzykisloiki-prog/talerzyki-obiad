@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   Talerzyki i Słoiki — „Obiad do biura” (zamówienia M34)
+   Talerzyki i Słoiki - „Obiad do biura” (zamówienia M34)
    Mobile-first. Te same tokeny co talerzyki-sloiki.pl:
    spiżarnia (zieleń), porcelana, mosiądz; Fraunces + Switzer.
    ═══════════════════════════════════════════════════════════════ */
@@ -336,7 +336,7 @@ fieldset { border: none; }
 .done-sum { margin-top: 14px; }
 .done-actions { display: grid; gap: 10px; margin-top: 22px; }
 
-/* Ekran ładowania (odpowiedź Google trwa 1–3 s) */
+/* Ekran ładowania (odpowiedź Google trwa 1-3 s) */
 .boot { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; }
 .boot .logo { font-size: 1.7rem; }
 .boot small { color: var(--muted); font-size: .85rem; }

@@ -87,7 +87,7 @@ const isOffice = () => !!(server.loc || {}).office;
 function renderLocs() {
   const btn = $('#goBtn');
   if (!server.loc) {
-    // dane miejsca jeszcze jadą z Google — formularz można już wypełniać
+    // dane miejsca jeszcze jadą z Google - formularz można już wypełniać
     $('#locs').innerHTML = `<div class="loc static pending"><span class="loc-ico"><svg><use href="#i-pin"/></svg></span><span class="loc-txt"><b></b><span></span></span></div>`;
     btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Chwileczkę…';
     return;
@@ -108,7 +108,7 @@ function applyLoc() {
   renderLocs();
   const office = isOffice();
   $('#officeFields').hidden = !office;
-  $('#lName').innerHTML = office ? 'Imię <small>(opcj.)</small>' : 'Imię <small>— po nim wydamy zamówienie</small>';
+  $('#lName').innerHTML = office ? 'Imię <small>(opcj.)</small>' : 'Imię <small>(po nim wydamy zamówienie)</small>';
   $('#lPhone').innerHTML = office ? 'Numer telefonu' : 'Numer telefonu <small>(opcj.)</small>';
   for (const id of ['#eName', '#ePhone', '#eFloor', '#eRoom']) $(id).hidden = true;
 }
@@ -137,7 +137,7 @@ $('#startForm').addEventListener('submit', e => {
   const name = $('#fName').value.trim();
   let ok = true;
   const bad = (el, err, cond) => { el && el.classList.toggle('bad', cond); $(err).hidden = !cond; if (cond) ok = false; };
-  $('#ePhone').textContent = office ? 'Podaj numer, żebyśmy mogli zadzwonić przy dostawie.' : 'Sprawdź numer — albo zostaw puste pole.';
+  $('#ePhone').textContent = office ? 'Podaj numer, żebyśmy mogli zadzwonić przy dostawie.' : 'Sprawdź numer albo zostaw puste pole.';
   if (office) {
     bad($('#fPhone'), '#ePhone', phone.length !== 9);
     bad(null, '#eFloor', floorSel === null);
@@ -167,7 +167,7 @@ function showLock() {
 const floorTxt = f => f === 0 ? 'Parter' : `Piętro ${f}`;
 const profLoc = () => ({ ...server.loc, icon: server.loc.office ? 'building' : 'pin' });
 const whereShort = () => profLoc().office ? `${floorTxt(profil.floor)} · pok. ${profil.room}` : `${profLoc().name} · ${profil.name}`;
-// Dzień dostawy dla miejsc „jak najszybciej”: dziś, a po godzinach / w niedzielę — następny dzień roboczy
+// Dzień dostawy dla miejsc „jak najszybciej”: dziś, a po godzinach / w niedzielę - następny dzień roboczy
 function asapDay() { const now = warsawNow(); return (isSunday(now.date) || now.minutes > toMin(OPEN_TO)) ? nextWorkday(now.date) : now.date; }
 function openMenu() { openMenuRefresh(); show('vMenu'); }
 function openMenuRefresh() {
@@ -176,9 +176,9 @@ function openMenuRefresh() {
   $('#dayTitle').textContent = isSunday(today) ? 'Menu' : dayLabel(today, today).title;
   const cb = $('#closedBanner');
   if (!server.open) { cb.hidden = false; cb.textContent = server.message || 'W tej chwili nie przyjmujemy zamówień online. Zadzwoń: 728 343 338.'; }
-  else if (profLoc().office ? !slotsFor(today).length : asapDay() !== today) { cb.hidden = false; cb.textContent = `Na dziś już nie zdążymy — możesz zamówić na ${dayLabel(nextWorkday(today), today).long}.`; }
+  else if (profLoc().office ? !slotsFor(today).length : asapDay() !== today) { cb.hidden = false; cb.textContent = `Na dziś już nie zdążymy. Możesz zamówić na ${dayLabel(nextWorkday(today), today).long}.`; }
   else cb.hidden = true;
-  $('#leadInfo').textContent = profLoc().office ? 'Zamów najpóźniej 90 minut przed dostawą. Dowozimy Pon–Sob 11:30–18:30.' : `Dowozimy do: ${profLoc().name}.`;
+  $('#leadInfo').textContent = profLoc().office ? 'Zamów najpóźniej 90 minut przed dostawą. Dowozimy Pon.-Sob. 11:30-18:30.' : `Dowozimy do: ${profLoc().name}.`;
   renderHalfPromo();
   renderMenu();
   updateCartbar();
@@ -188,7 +188,7 @@ function renderHalfPromo() {
   $('#halfPromo').innerHTML = `<span class="hp-badge"><b>½</b><small>−30%</small></span>
     <span class="hp-title">Mniejszy głód? <em>Pół porcji</em> taniej</span>
     <span class="hp-ex">np. ${esc(ex.name)}: <s>${zl(ex.price)}</s> → <b>${zl(halfPrice(ex))}</b></span>
-    <span class="hp-go">Każde danie — wybierz „Pół porcji” →</span>`;
+    <span class="hp-go">Każde danie: wybierz „Pół porcji” →</span>`;
 }
 $('#whereBtn').addEventListener('click', openStart);
 
@@ -210,9 +210,6 @@ function dishHTML(it) {
 function renderMenu() {
   const cats = [];
   const sp = allSpecials();
-  if (!sp.length && !serverFresh && API_URL) {
-    cats.push({ id: 'specjaly', name: 'Specjały dnia', count: 0, html: `<section class="cat special" id="c-specjaly"><div class="cat-head"><h2>Specjały <em>dnia</em></h2><span class="badge">tylko dziś</span></div><p class="cat-note"><span class="spinner" style="display:inline-block;vertical-align:-3px;margin-right:8px;border-color:var(--line-2);border-top-color:var(--brass)"></span>Wczytujemy dzisiejsze specjały…</p></section>` });
-  }
   if (sp.length) {
     let h = '';
     for (const g of SPECIAL_GROUPS) {
@@ -479,7 +476,7 @@ function renderCart() {
   } else if (!L.office) {
     const d = asapDay();
     h += co.day
-      ? `<div class="asap"><svg><use href="#i-clock"/></svg><div><b>${d === server.today ? 'Dziś' : dayLabel(d, server.today).long[0].toUpperCase() + dayLabel(d, server.today).long.slice(1)} — jak najszybciej</b><br>Przywieziemy, jak tylko obiad będzie gotowy. Godziny nie trzeba wybierać.</div></div>`
+      ? `<div class="asap"><svg><use href="#i-clock"/></svg><div><b>${d === server.today ? 'Dziś' : dayLabel(d, server.today).long[0].toUpperCase() + dayLabel(d, server.today).long.slice(1)}, jak najszybciej</b><br>Przywieziemy, jak tylko obiad będzie gotowy. Godziny nie trzeba wybierać.</div></div>`
       : `<div class="form-err">Na dziś już nie zdążymy, a specjałów nie przygotujemy na jutro. Usuń specjały lub zadzwoń: 728 343 338.</div>`;
   } else {
     h += `<div class="seg" role="radiogroup">` + days.map(x => `<button type="button" role="radio" data-day="${x.d}" aria-checked="${co.day === x.d}" ${!x.slots.length || x.blocked ? 'disabled' : ''}>${dayLabel(x.d, server.today).short}</button>`).join('') + `</div>`;
@@ -595,8 +592,8 @@ function openDone() {
   const p = o.profil || profil;
   const pl = o.loc || server.loc || { office: true, name: '' };
   $('#doneWhen').textContent = pl.office
-    ? `Przyniesiemy na ${floorTxt(p.floor).toLowerCase()}, pokój ${p.room} — ${dayLabel(o.day, warsawNow().date).long}, ok. ${o.time}.`
-    : `Przywieziemy do: ${pl.name}, dla: ${p.name} — ${dayLabel(o.day, warsawNow().date).long}, jak tylko będzie gotowe.`;
+    ? `Przyniesiemy na ${floorTxt(p.floor).toLowerCase()}, pokój ${p.room}, ${dayLabel(o.day, warsawNow().date).long}, ok. ${o.time}.`
+    : `Przywieziemy do: ${pl.name}, dla: ${p.name}, ${dayLabel(o.day, warsawNow().date).long}, jak tylko będzie gotowe.`;
   $('#doneCode').textContent = 'Zamówienie #' + o.code;
   $('#doneSum').innerHTML = o.summary.map(s => `<div class="line"><div class="line-body"><div class="line-name">${s.qty}× ${esc(s.name)}</div>${s.opts ? `<div class="line-opts">${esc(s.opts)}</div>` : ''}</div><div class="line-side"><span class="line-sum price">${zl(s.sum)}</span></div></div>`).join('') +
     `<div class="totals" style="margin-top:4px;border-top:none"><div class="grand"><span>Razem</span><span class="price">${zl(o.total)}</span></div><div><span class="muted">${esc(o.payLabel || ((o.payment === 'karta' ? 'Karta lub BLIK' : 'Gotówka') + ' przy odbiorze'))}</span></div></div>`;
@@ -607,7 +604,7 @@ function openDone() {
 function setTrack(status) {
   const idx = STATUS_ORDER.indexOf(status);
   document.querySelectorAll('#track li').forEach((li, i) => { li.classList.toggle('on', i <= idx); li.classList.toggle('now', i === idx); });
-  if (status === 'anulowane') $('#doneCode').textContent += ' · anulowane — zadzwoń do nas';
+  if (status === 'anulowane') $('#doneCode').textContent += ' · anulowane, zadzwoń do nas';
 }
 async function poll(id) {
   clearTimeout(pollT);
@@ -638,7 +635,7 @@ function route() {
   else openStart();
 }
 
-// Start: bez tajnego linku — ekran „tylko przez link”.
+// Start: bez tajnego linku - ekran „tylko przez link”.
 // Z linkiem: jeśli telefon pamięta dzisiejsze menu, pokazujemy je od razu, a świeże dane dociągamy w tle.
 (async () => {
   if (!KOD) return show('vLock');

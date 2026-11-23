@@ -1,4 +1,4 @@
-# Strona statyczna (bez funkcji i bez budowania) — zamówienia trafiają do Google Tabeli przez Apps Script.
+# Strona statyczna (bez funkcji i bez budowania) - zamówienia trafiają do Google Tabeli przez Apps Script.
 [build]
   publish = "public"
   command = ""

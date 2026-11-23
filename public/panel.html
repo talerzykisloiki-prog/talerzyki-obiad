@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Panel kuchni – Obiad do biura</title>
+  <title>Panel kuchni | Obiad do pracy</title>
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#0C1712" />
   <link rel="icon" type="image/png" href="img/favicon.png" />
@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&display=swap" rel="stylesheet" />
   <link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="app.css?v=5" />
+  <link rel="stylesheet" href="app.css?v=9" />
   <style>
     .app { max-width: 760px; }
     .p-pad { padding: 0 var(--pad) calc(40px + var(--safe-b)); }
@@ -34,8 +34,10 @@
     .order.s-nowe { border-left-color: var(--brass); box-shadow: 0 0 0 1px rgba(201,165,107,.35); }
     .order.s-przyjete { border-left-color: #8FB4E0; }
     .order.s-w-drodze { border-left-color: #B79BE0; }
-    .order.s-dostarczone { border-left-color: var(--ok); opacity: .7; }
-    .order.s-anulowane { border-left-color: var(--danger); opacity: .5; }
+    .order.s-dostarczone { border-left-color: var(--ok); background: rgba(26,44,36,.6); }
+    .order.s-dostarczone .o-items, .order.s-dostarczone .o-when { opacity: .75; }
+    .order.s-anulowane { border-left-color: var(--danger); background: rgba(26,44,36,.45); }
+    .order.s-anulowane .o-items, .order.s-anulowane .o-when, .order.s-anulowane .o-where { opacity: .55; text-decoration: line-through; text-decoration-color: rgba(224,138,138,.6); }
     .o-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
     .o-when { font-family: var(--serif); font-size: 1.9rem; line-height: 1; }
     .o-when small { font-family: var(--sans); font-size: .78rem; color: var(--muted); display: block; margin-top: 4px; }
@@ -62,9 +64,12 @@
     .hint code { color: var(--brass-hi); }
     .locf { grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); padding: 6px 0 0; }
     .locf button { font-size: .8rem; min-height: 38px; }
-    .o-loc { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--bg-deep); background: var(--brass); padding: .2rem .55rem; border-radius: 999px; margin-bottom: 6px; }
+    .o-loc { display: flex; align-items: center; gap: 6px; margin: -2px 0 12px; padding-bottom: 10px; border-bottom: 1px solid var(--line); font-size: .8rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--brass-hi); }
+    .o-loc svg { width: 15px; height: 15px; fill: var(--brass); flex-shrink: 0; }
+    .o-pay { margin-top: 8px; font-size: .92rem; font-weight: 600; color: var(--text); }
+    .o-pay.o-pay-cash { color: var(--ok); }
     .o-day { display: block; margin-top: 6px; font-family: var(--sans); font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--bg-deep); background: #8FB4E0; padding: .2rem .5rem; border-radius: 6px; width: max-content; }
-    .o-when.asap { font-size: 1.25rem; color: var(--brass-hi); }
+    .o-when.o-asap { font-size: 1.25rem; color: var(--brass-hi); }
     .o-pay-cash { color: var(--ok); }
     .live { display: inline-flex; align-items: center; gap: .4rem; font-size: .78rem; color: var(--muted); }
     .live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); animation: blink 2s infinite; }
@@ -107,7 +112,7 @@
 
       <div id="tSpecials" hidden>
         <div class="bar"><h2>Specjały dnia</h2><span class="live" id="spDate"></span></div>
-        <p class="hint">Jedno danie w linii: <code>nazwa | cena</code>. Do dania głównego bez wyboru dodatków dopisz <code>| bez dodatków</code>.<br>Po zapisaniu specjały są widoczne dla klientów <b>tylko dziś</b> — rano wpisz nowe.</p>
+        <p class="hint">Jedno danie w linii: <code>nazwa | cena</code>. Do dania głównego bez wyboru dodatków dopisz <code>| bez dodatków</code>.<br>Po zapisaniu specjały są widoczne dla klientów <b>tylko dziś</b>. Rano wpisz nowe.</p>
         <form id="spForm"></form>
       </div>
 
@@ -120,7 +125,7 @@
         </div>
         <div class="card" style="margin-top:14px">
           <b>Powiadomienia</b>
-          <p class="hint">Trzymaj ten panel otwarty na telefonie lub tablecie w kuchni — nowe zamówienie zagra dźwiękiem i pojawi się na górze listy. Odświeżanie co 15 sekund. Wszystkie zamówienia zapisują się też w Google Tabeli.</p>
+          <p class="hint">Trzymaj ten panel otwarty na telefonie lub tablecie w kuchni. Nowe zamówienie zagra dźwiękiem i pojawi się na górze listy. Odświeżanie co 15 sekund. Wszystkie zamówienia zapisują się też w Google Tabeli.</p>
           <button class="btn btn-line btn-wide" type="button" id="testSound" style="margin-top:10px">Sprawdź dźwięk</button>
           <a class="btn btn-line btn-wide" href="https://docs.google.com/spreadsheets/d/1pkldRgA_ayhOaEyf4_3E9VI37IVGlIHSEiN67hcZfKk/edit" target="_blank" rel="noopener" style="margin-top:10px">Otwórz tabelę zamówień (Google)</a>
         </div>
@@ -214,24 +219,27 @@ function renderList(orders) {
   if (!orders.length) { $('#orders').innerHTML = '<p class="empty">Brak zamówień na ten dzień.</p>'; return; }
   const sorted = [...orders].sort((a, b) => (a.day > b.day) - (a.day < b.day) || (a.status === 'dostarczone' || a.status === 'anulowane') - (b.status === 'dostarczone' || b.status === 'anulowane') || (isAsap(b) - isAsap(a)) || a.time.localeCompare(b.time) || (a.createdAt > b.createdAt ? 1 : -1));
   $('#orders').innerHTML = sorted.map(o => `<article class="order s-${o.status}">
+    <div class="o-loc"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>${esc(o.locName)}</div>
     <div class="o-top">
-      <div class="o-when ${isAsap(o) ? 'asap' : ''}">${isAsap(o) ? 'Od razu' : esc(o.time)}${o.day !== today() ? `<span class="o-day">${dayTag(o.day)}</span>` : ''}<small>#${esc(o.code)} · złożone ${new Date(o.createdAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Warsaw' })}</small></div>
-      <div class="o-where"><span class="o-loc">${esc(o.locName)}</span>${o.customer.floor === null
-        ? `<b>${esc(o.customer.name || '—')}</b>`
+      <div class="o-when ${isAsap(o) ? 'o-asap' : ''}">${isAsap(o) ? 'Od razu' : esc(o.time)}${o.day !== today() ? `<span class="o-day">${dayTag(o.day)}</span>` : ''}<small>#${esc(o.code)} · złożone ${new Date(o.createdAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Warsaw' })}</small></div>
+      <div class="o-where">${o.customer.floor === null
+        ? `<b>${esc(o.customer.name || '(bez imienia)')}</b>`
         : `<b>${floorTxt(o.customer.floor)} · pok. ${esc(o.customer.room)}</b><span>${esc([o.customer.company, o.customer.name].filter(Boolean).join(' · '))}</span>`}</div>
     </div>
     ${o.customer.phone ? `<a class="o-tel" href="tel:+48${esc(o.customer.phone.replace(/\D/g, '').slice(-9))}"><svg><use href="#i-phone"/></svg>${esc(o.customer.phone)}</a>` : ''}
-    <ul class="o-items">${o.items.map(l => `<li><b>${l.qty}× ${esc(l.name)}</b>${l.variant ? ` — ${esc(l.variant)}` : ''}${l.half ? ' <span class="half">½ porcji</span>' : ''}
+    <ul class="o-items">${o.items.map(l => `<li><b>${l.qty}× ${esc(l.name)}</b>${l.variant ? ` · ${esc(l.variant)}` : ''}${l.half ? ' <span class="half">½ porcji</span>' : ''}
       ${(l.dodatki?.length || l.surowki?.length) ? `<div>${esc([...(l.dodatki || []), ...(l.surowki || [])].join(' · '))}</div>` : (l.dodatki ? '<div>bez dodatku</div>' : '')}
       ${l.extras?.length ? `<div>+ ${esc(l.extras.join(', '))}</div>` : ''}${l.note ? `<div>„${esc(l.note)}”</div>` : ''}</li>`).join('')}</ul>
     ${o.note ? `<div class="o-note">${esc(o.note)}</div>` : ''}
-    <div class="o-foot"><span class="o-total">${zl(o.total)}<small class="${/reszta|odliczona/.test(o.paymentLabel) ? 'o-pay-cash' : ''}">${esc(o.paymentLabel)}</small></span>${o.status !== 'anulowane' ? `<button class="o-cancel" data-cancel="${o.id}">Anuluj</button>` : '<span class="o-cancel">Anulowane</span>'}</div>
+    <div class="o-pay ${/reszta|odliczona/.test(o.paymentLabel) ? 'o-pay-cash' : ''}">${esc(o.paymentLabel.replace(/\s[\u2013\u2014-]\s/, ': '))}</div>
+    <div class="o-foot"><span class="o-total">Razem ${zl(o.total)}</span>${o.status !== 'anulowane' ? `<button class="o-cancel" data-cancel="${o.id}">Anuluj</button>` : '<span class="o-cancel">Anulowane</span>'}</div>
     ${o.status !== 'anulowane' ? `<div class="o-status">${STATUSY.map(([k, n]) => `<button data-id="${o.id}" data-s="${k}" aria-pressed="${o.status === k}">${n}</button>`).join('')}</div>` : ''}
   </article>`).join('');
 }
 function nextWorkday(d) { const x = new Date(d + 'T12:00:00Z'); do { x.setUTCDate(x.getUTCDate() + 1); } while (x.getUTCDay() === 0); return x.toISOString().slice(0, 10); }
 const DNI_PL = ['niedziela', 'poniedziałek', 'wtorek', 'środa', 'czwartek', 'piątek', 'sobota'];
 function dayTag(d) { const x = new Date(d + 'T12:00:00Z'); return `na ${DNI_PL[x.getUTCDay()]} ${x.getUTCDate()}.${String(x.getUTCMonth() + 1).padStart(2, '0')}`; }
+const pending = {}; // id → status wysłany do Google, jeszcze niepotwierdzony
 async function load(silent) {
   const day = $('#day').value || today();
   try {
@@ -241,6 +249,8 @@ async function load(silent) {
       const [a, b] = await Promise.all([api('zamowienia', { day }), api('zamowienia', { day: nextWorkday(day) })]);
       d = { day, orders: [...a.orders, ...b.orders] };
     } else d = await api('zamowienia', { day });
+    // Odświeżenie mogło wystartować, zanim Google zapisał zmianę statusu: nie cofamy jej
+    for (const x of d.orders) if (pending[x.id]) { if (x.status === pending[x.id]) delete pending[x.id]; else x.status = pending[x.id]; }
     const ids = new Set(d.orders.map(o => o.id));
     if (known && day === today()) { const fresh = d.orders.filter(o => !known.has(o.id)); if (fresh.length) { beep(); toast(`Nowe zamówienie: ${fresh[0].customer.floor === null ? fresh[0].locName + ', ' + fresh[0].customer.name : floorTxt(fresh[0].customer.floor) + ', pok. ' + fresh[0].customer.room}`); } }
     if (day === today()) known = ids;
@@ -253,21 +263,24 @@ $('#orders').addEventListener('click', async e => {
   const b = e.target.closest('[data-s],[data-cancel]'); if (!b) return;
   const id = b.dataset.id || b.dataset.cancel, status = b.dataset.s || 'anulowane';
   if (status === 'anulowane' && !confirm('Anulować to zamówienie?')) return;
-  const o = orders.find(x => x.id === id); const prev = o.status; o.status = status; render();
-  try { await api('status', { id, day: o.day, status }); } catch { o.status = prev; render(); toast('Nie zapisano — spróbuj ponownie'); }
+  const o = orders.find(x => x.id === id); const prev = o.status; o.status = status;
+  pending[id] = status; // pamiętamy zmianę, dopóki Google jej nie potwierdzi
+  render();
+  try { await api('status', { id, day: o.day, status }); }
+  catch { delete pending[id]; o.status = prev; render(); toast('Nie zapisano, spróbuj ponownie'); }
 });
 
 // ─── Specjały ───
 let settings;
 function renderSpecials() {
-  $('#spDate').textContent = settings.specialsDate === settings.today ? 'aktualne na dziś' : 'nieaktualne — wpisz dzisiejsze';
+  $('#spDate').textContent = settings.specialsDate === settings.today ? 'aktualne na dziś' : 'nieaktualne, wpisz dzisiejsze';
   $('#spForm').innerHTML = SPECIAL_GROUPS.map(g => `<label class="field sp-group"><span>${esc(g.name)}</span><textarea class="input" name="${g.id}" rows="3">${esc(settings.specialsText[g.id] || '')}</textarea></label>`).join('') +
     `<button class="btn btn-brass btn-wide" type="submit" style="margin-top:18px">Zapisz specjały na dziś</button>`;
 }
 $('#spForm').addEventListener('submit', async e => {
   e.preventDefault();
   const text = {}; for (const g of SPECIAL_GROUPS) text[g.id] = e.target.elements[g.id].value;
-  try { await api('specjaly', { text }); settings.specialsText = text; settings.specialsDate = settings.today; renderSpecials(); toast('Zapisano — klienci widzą nowe specjały'); }
+  try { await api('specjaly', { text }); settings.specialsText = text; settings.specialsDate = settings.today; renderSpecials(); toast('Zapisano. Klienci widzą nowe specjały'); }
   catch { toast('Nie zapisano'); }
 });
 

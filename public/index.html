@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Obiad do pracy – Talerzyki i Słoiki</title>
-  <!-- Pytanie do Google wysyłamy od razu, zanim wczyta się reszta strony (odpowiedź trwa 2–5 s) -->
+  <title>Obiad do pracy | Talerzyki i Słoiki</title>
+  <!-- Pytanie do Google wysyłamy od razu, zanim wczyta się reszta strony (odpowiedź trwa 2-5 s) -->
   <script>(function(){try{var m=new URLSearchParams(location.search).get("m");if(!m){m=JSON.parse(localStorage.getItem("tis_kod")||"\"\"");}if(m){window.__menuP=fetch("https://script.google.com/macros/s/AKfycbyFFiNUp1WLZdbwrmbFDB7NbYVsGNE2pVuPa5Vu664VDbRhrw1dZ_zorRBwcrxaVXVF/exec?a=menu&m="+encodeURIComponent(m),{cache:"no-store"}).then(function(r){return r.json();});}}catch(e){}})();</script>
-  <meta name="description" content="Domowy obiad z dowozem do pracy — Talerzyki i Słoiki, Gorzów Wlkp." />
+  <meta name="description" content="Domowy obiad z dowozem do pracy. Talerzyki i Słoiki, Gorzów Wlkp." />
   <meta name="theme-color" content="#0C1712" />
   <meta name="robots" content="noindex, nofollow" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -15,7 +15,7 @@
   <link rel="icon" type="image/png" href="img/favicon.png" />
   <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <meta property="og:title" content="Obiad do biura – Talerzyki i Słoiki" />
+  <meta property="og:title" content="Obiad do pracy | Talerzyki i Słoiki" />
   <meta property="og:description" content="Domowy obiad z dowozem do pracy. Zamów w minutę." />
   <meta property="og:image" content="img/hero.webp" />
   <link rel="preconnect" href="https://script.google.com" />
@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&display=swap" rel="stylesheet" />
   <link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="app.css?v=8" />
+  <link rel="stylesheet" href="app.css?v=9" />
   <link rel="modulepreload" href="menu.js?v=8" />
   <link rel="modulepreload" href="config.js?v=5" />
 </head>
@@ -72,7 +72,7 @@
 
     <form class="start-form card" id="startForm" novalidate>
       <h2>Gdzie przynieść obiad?</h2>
-      <p>Zapamiętamy dane na tym telefonie — następnym razem od razu menu.</p>
+      <p>Zapamiętamy dane na tym telefonie. Następnym razem od razu menu.</p>
 
       <div class="locs" id="locs"></div>
 
@@ -80,7 +80,7 @@
         <label class="field">
           <span id="lName">Imię</span>
           <input class="input" id="fName" type="text" autocomplete="given-name" maxlength="40" placeholder="np. Ania" />
-          <span class="err" id="eName" hidden>Wpisz imię — po nim wydamy zamówienie.</span>
+          <span class="err" id="eName" hidden>Wpisz imię, po nim wydamy zamówienie.</span>
         </label>
 
         <label class="field">
@@ -114,7 +114,7 @@
         <button class="btn btn-brass btn-wide" type="submit" id="goBtn">Przejdź do menu <span aria-hidden="true">→</span></button>
       </div>
     </form>
-    <p class="start-foot">Bistro Talerzyki i Słoiki · Galeria Manhattan, ul. Kombatantów 30<br>Pon–Sob 11:00–19:00</p>
+    <p class="start-foot">Bistro Talerzyki i Słoiki · Galeria Manhattan, ul. Kombatantów 30<br>Pon.-Sob. 11:00-19:00</p>
   </section>
 
   <!-- ═════════ 0. BRAK DOSTĘPU (wejście bez tajnego linku) ═════════ -->
@@ -125,7 +125,7 @@
     <div class="card lock-card">
       <span class="note">Zamówienia firmowe</span>
       <h2>Zamawianie tylko przez link od nas</h2>
-      <p>Ta strona działa dla firm, z którymi współpracujemy — każda ma swój link. Jeśli chcesz zamawiać obiady do pracy, zadzwoń.</p>
+      <p>Ta strona działa dla firm, z którymi współpracujemy. Każda ma swój link. Jeśli chcesz zamawiać obiady do pracy, zadzwoń.</p>
       <a class="btn btn-brass btn-wide" href="tel:+48728343338"><svg width="18" height="18" style="fill:currentColor"><use href="#i-phone"/></svg>728 343 338</a>
     </div>
   </section>
@@ -146,11 +146,11 @@
         <h1 id="dayTitle">Menu</h1>
       </div>
       <div class="banner" id="closedBanner" hidden></div>
-      <div class="info-strip"><svg><use href="#i-clock"/></svg><span id="leadInfo">Zamów najpóźniej 90 minut przed dostawą. Dowozimy Pon–Sob 11:30–18:30.</span></div>
+      <div class="info-strip"><svg><use href="#i-clock"/></svg><span id="leadInfo">Zamów najpóźniej 90 minut przed dostawą. Dowozimy Pon.-Sob. 11:30-18:30.</span></div>
       <a class="half-promo" id="halfPromo" href="#c-obiady" data-c="obiady"></a>
       <nav class="tiles" id="tiles" aria-label="Kategorie"></nav>
       <div id="cats"></div>
-      <p class="menu-foot">Każde danie możesz zamówić jako pół porcji — 30% taniej.<br>Masz pytanie lub alergię? <a href="tel:+48728343338">Zadzwoń: 728 343 338</a></p>
+      <p class="menu-foot">Każde danie możesz zamówić jako pół porcji, 30% taniej.<br>Masz pytanie lub alergię? <a href="tel:+48728343338">Zadzwoń: 728 343 338</a></p>
     </main>
 
     <div class="cartbar" id="cartbar">
@@ -197,6 +197,6 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script type="module" src="app.js?v=8"></script>
+<script type="module" src="app.js?v=9"></script>
 </body>
 </html>

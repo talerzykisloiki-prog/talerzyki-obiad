@@ -1,8 +1,8 @@
-// Obiad do biura — Talerzyki i Słoiki. Plik wygenerowany 2026-11-21 12:04 (node apps-script/zbuduj.mjs).
+// Obiad do biura - Talerzyki i Słoiki. Plik wygenerowany 2026-11-23 10:25 (node apps-script/zbuduj.mjs).
 // Wklej CAŁOŚĆ do edytora Apps Script (Rozszerzenia → Apps Script) w miejsce kodu.
 
 // ═══════════════════════════════════════════════════════════════
-// Menu „Obiad do biura” — Talerzyki i Słoiki
+// Menu „Obiad do biura” - Talerzyki i Słoiki
 // Wspólny plik: używa go strona (przeglądarka) i funkcja zamówień
 // (serwer liczy cenę jeszcze raz z tego pliku, więc ceny są tylko tutaj).
 // Ceny w groszach: 3400 = 34,00 zł.
@@ -47,7 +47,7 @@ const POL_PORCJI_RABAT = 0.30;
 // extras:   dopłaty do zaznaczenia
 const CATEGORIES = [
   {
-    id: 'obiady', name: 'Dania mięsne', note: 'Dodatek i surówki w cenie — wybierasz, jakie lubisz',
+    id: 'obiady', name: 'Dania mięsne', note: 'Dodatek i surówki w cenie. Wybierasz, jakie lubisz',
     items: [
       { id: 'kotlety-mielone', name: 'Kotlety mielone', price: 3400, sides: true, half: true, img: 'kotlety-mielone-z-karkowki.webp',
         desc: 'Soczyste kotlety mielone (2 szt.)',
@@ -122,14 +122,14 @@ const CATEGORIES = [
         variants: { label: 'Nadzienie', options: [{ name: 'Z twarogiem' }, { name: 'Z czekoladą' }, { name: 'Z prażonym jabłkiem' }, { name: 'Z dżemem truskawkowym' }] } },
       { id: 'nal-orzech', name: 'Naleśniki orzechowe', price: 2400,
         desc: '2 szt. z masłem orzechowym, prażonym jabłkiem i polewą czekoladową' },
-      { id: 'ciasto-dnia', name: 'Ciasto dnia', price: 1600, desc: 'Domowe wypieki — zapytamy, co dziś jest' },
+      { id: 'ciasto-dnia', name: 'Ciasto dnia', price: 1600, desc: 'Domowe wypieki. Zapytamy, co dziś jest' },
       { id: 'sernik-keto', name: 'Sernik keto', price: 1800, desc: 'Bez cukru i pszenicy, z liofilizowanymi malinami' },
       { id: 'ciastko', name: 'Ciastko', price: 500, desc: 'Kruche maślane ciastko z dodatkami' },
     ],
   },
 ];
 
-// Pół porcji — wszystkie dania
+// Pół porcji - wszystkie dania
 for (const c of CATEGORIES) for (const it of c.items) it.half = true;
 
 // Grupy specjałów dnia (w tej kolejności w menu i w panelu kuchni)
@@ -142,7 +142,7 @@ const SPECIAL_GROUPS = [
   { id: 'ryba', name: 'Ryba', sides: true },
 ];
 
-// Domyślne specjały (piątek 20.11.2026) — kuchnia zmienia je w panelu.
+// Domyślne specjały (piątek 20.11.2026) - kuchnia zmienia je w panelu.
 // Linia: „nazwa | cena” ; dopisek „| bez dodatków” wyłącza wybór dodatków.
 const DEFAULT_SPECIALS_TEXT = {
   'zupy-mieso': 'Barszcz ukraiński na kurczaku | 16\nZupa indyjska curry na kurczaku | 16',
@@ -205,7 +205,7 @@ function zl(grosze) {
   return (grosze / 100).toFixed(2).replace('.', ',') + ' zł';
 }
 
-// Godziny przyjmowania zamówień (Pon–Sob 11:00–19:00, czas Polski)
+// Godziny przyjmowania zamówień (Pon-Sob 11:00-19:00, czas Polski)
 const OPEN_FROM = '11:30';   // pierwsza dostawa
 const OPEN_TO = '18:30';     // ostatnia dostawa
 const LEAD_MIN = 90;         // zamówienia do 90 min przed dowozem
@@ -214,7 +214,7 @@ const PIETRA = 12;           // M34: 12 pięter
 
 
 // ═══════════════════════════════════════════════════════════════
-// ZAPLECZE (Google Apps Script) — przyjmowanie zamówień do Google Tabeli
+// ZAPLECZE (Google Apps Script) - przyjmowanie zamówień do Google Tabeli
 // Arkusze: „Zamówienia”, „Specjały”, „Ustawienia”. Strefa: Europe/Warsaw.
 // Pierwsze uruchomienie: wybierz funkcję `przygotuj` i kliknij „Uruchom”.
 // ═══════════════════════════════════════════════════════════════
@@ -251,7 +251,7 @@ function slotOk(day, time) {
   if (day === now.date && t < now.minutes + LEAD_MIN - 10) return false;
   return true;
 }
-// Tabela potrafi zamienić tekst na datę/godzinę — zamieniamy z powrotem
+// Tabela potrafi zamienić tekst na datę/godzinę - zamieniamy z powrotem
 function cellStr(v) {
   if (v instanceof Date) return Utilities.formatDate(v, TZ, v.getFullYear() < 1901 ? 'HH:mm' : 'yyyy-MM-dd');
   return String(v == null ? '' : v).trim().replace(/^'/, '');
@@ -278,9 +278,9 @@ function miejscePoKodzie(code) {
 // To, co widzi klient (bez kodów innych miejsc)
 function publicLoc(m) {
   return { name: m.name, office: m.office, place: m.place,
-    hint: m.office ? 'Dowóz na Twoje piętro o wybranej godzinie' : 'Zamawiasz rano — przywozimy, jak tylko będzie gotowe' };
+    hint: m.office ? 'Dowóz na Twoje piętro o wybranej godzinie' : 'Zamawiasz rano, przywozimy, jak tylko będzie gotowe' };
 }
-const LOCKED = { error: 'Ten link jest nieaktywny. Zamówienia tylko przez link od nas — zadzwoń: 728 343 338.', locked: true };
+const LOCKED = { error: 'Ten link jest nieaktywny. Zamówienia tylko przez link od nas. Zadzwoń: 728 343 338.', locked: true };
 
 // ─── Ustawienia (arkusz klucz → wartość) ───
 function settings() {
@@ -335,7 +335,7 @@ function state() {
   const hit = cache.get('stan');
   if (hit) { const o = JSON.parse(hit); if (o.today === warsawNow().date) return o; }
   const o = stateFresh();
-  try { cache.put('stan', JSON.stringify(o), 120); } catch (e) { /* za duże — pomijamy */ }
+  try { cache.put('stan', JSON.stringify(o), 120); } catch (e) { /* za duże - pomijamy */ }
   return o;
 }
 function dropCache() { try { CacheService.getScriptCache().remove('stan'); } catch (e) { /* */ } }
@@ -390,7 +390,7 @@ function placeOrder(body) {
     if (!slotOk(day, time)) return { error: 'Ta godzina dostawy jest już niedostępna. Wybierz inną.' };
   } else {
     const name = clean(c.name, 40);
-    if (!name) return { error: 'Wpisz imię — po nim wydamy zamówienie.' };
+    if (!name) return { error: 'Wpisz imię, po nim wydamy zamówienie.' };
     if (digits > 0 && digits < 9) return { error: 'Sprawdź numer telefonu albo zostaw puste pole.' };
     customer = { loc: loc.name, phone, floor: null, room: '', company: '', name };
     const now0 = warsawNow();
@@ -399,7 +399,7 @@ function placeOrder(body) {
   }
   const payment = PLATNOSCI[body.payment] ? body.payment : 'gotowka';
   if (!Array.isArray(body.items) || !body.items.length) return { error: 'Koszyk jest pusty.' };
-  if (body.items.length > 40) return { error: 'Za dużo pozycji — zadzwoń do nas.' };
+  if (body.items.length > 40) return { error: 'Za dużo pozycji, zadzwoń do nas.' };
 
   const items = []; let total = 0;
   for (const raw of body.items) {
@@ -423,12 +423,12 @@ function placeOrder(body) {
 
   let payLabel = PLATNOSCI[payment];
   if (payment === 'gotowka') {
-    if (body.cash === 'exact') payLabel = 'Gotówka – odliczona kwota';
+    if (body.cash === 'exact') payLabel = 'Gotówka, odliczona kwota';
     else {
       const paid = Math.round(parseFloat(String(body.cash).replace(',', '.')) * 100);
       if (!(paid > 0)) return { error: 'Zaznacz, czy potrzebujesz reszty.' };
       if (paid < total) return { error: 'Kwota gotówki jest mniejsza niż suma zamówienia.' };
-      payLabel = 'Gotówka – płaci ' + zl(paid) + ', reszta ' + zl(paid - total);
+      payLabel = 'Gotówka: płaci ' + zl(paid) + ', reszta ' + zl(paid - total);
     }
   }
 
@@ -439,7 +439,7 @@ function placeOrder(body) {
   const opis = items.map(l => {
     let t = l.qty + '× ' + l.name;
     if (l.variant) t += ' (' + l.variant + ')';
-    if (l.half) t += ' — ½ porcji';
+    if (l.half) t += ' (½ porcji)';
     const s = [].concat(l.dodatki || [], l.surowki || []);
     if (s.length) t += ': ' + s.join(', ');
     if (l.extras && l.extras.length) t += ' + ' + l.extras.join(', ');
@@ -457,7 +457,7 @@ function placeOrder(body) {
   } finally { lock.releaseLock(); }
 
   telegram('🍽 Nowe zamówienie #' + code + '\n' + loc.name + (loc.office ? ' · ' + (customer.floor === 0 ? 'parter' : 'piętro ' + customer.floor) + ' · pokój ' + customer.room : '') +
-    '\n👤 ' + (customer.name || '—') + (phone ? ' · 📞 ' + phone : '') + '\n🕐 ' + (day === now.date ? 'dziś ' : day + ' ') + time +
+    '\n👤 ' + (customer.name || '(bez imienia)') + (phone ? ' · 📞 ' + phone : '') + '\n🕐 ' + (day === now.date ? 'dziś ' : day + ' ') + time +
     '\n\n' + opis + '\n\nRazem: ' + zl(total) + ' · ' + payLabel + (note ? '\nUwagi: ' + note : ''));
 
   return { id, code, total, day, time, payLabel };
@@ -579,13 +579,13 @@ function przygotuj() {
   sp.getRange('A1:D1').setValues([['Grupa', 'Danie', 'Cena (zł)', 'Bez dodatków (TAK)']]).setFontWeight('bold').setBackground('#12211B').setFontColor('#EDE8DD');
   sp.getRange('F1').setValue('Ważne na dzień:').setFontWeight('bold');
   sp.getRange('G1').setNumberFormat('@');
-  sp.getRange('F3').setValue('Specjały widzą klienci tylko w dniu z G1. Najprościej zmieniać je w panelu kuchni (zakładka „Specjały dnia”) — panel sam wpisze datę.').setWrap(true);
+  sp.getRange('F3').setValue('Specjały widzą klienci tylko w dniu z G1. Najprościej zmieniać je w panelu kuchni (zakładka „Specjały dnia”) - panel sam wpisze datę.').setWrap(true);
   sp.setColumnWidth(1, 190); sp.setColumnWidth(2, 380); sp.setColumnWidth(3, 80); sp.setColumnWidth(4, 130); sp.setColumnWidth(6, 120); sp.setColumnWidth(7, 110);
   sp.setFrozenRows(1);
   sp.getRange(2, 1, 200, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(SPECIAL_GROUPS.map(g => g.name), true).build());
   if (String(sp.getRange('B2').getValue()).trim() === '') { writeSpecials(DEFAULT_SPECIALS_TEXT); sp.getRange('G1').setValue('2026-11-20'); }
 
-  // Miejsca (tajne linki). Nazw i kodów NIE ma w kodzie — wpisuje się je w tabeli.
+  // Miejsca (tajne linki). Nazw i kodów NIE ma w kodzie - wpisuje się je w tabeli.
   let mi = book.getSheetByName(ARK_MIE) || book.insertSheet(ARK_MIE, 1);
   mi.getRange('A1:F1').setValues([['Kod (tajny)', 'Nazwa', 'Typ', 'Opis (widzi klient)', 'Aktywne', 'Link dla klientów']]).setFontWeight('bold').setBackground('#12211B').setFontColor('#EDE8DD');
   mi.setFrozenRows(1);
@@ -598,7 +598,7 @@ function przygotuj() {
   if (!mi.getRange(2, 6).getFormula()) mi.getRange(2, 6, 50, 1).setFormulas(links); // nie nadpisuj działających linków
   [150, 220, 90, 220, 80, 520].forEach((w, i) => mi.setColumnWidth(i + 1, w));
   mi.getRange('H1').setValue('Jak to działa').setFontWeight('bold');
-  mi.getRange('H2').setValue('Każde miejsce ma swój tajny link (kolumna F). Bez linku nie da się zamówić. Typ „piętra” = piętro, pokój i wybór godziny; „imię” = tylko imię, dowóz jak najszybciej. Link wyciekł? Zmień kod w kolumnie A — stary link przestanie działać. Nowy kod: min. 10 losowych liter i cyfr.').setWrap(true);
+  mi.getRange('H2').setValue('Każde miejsce ma swój tajny link (kolumna F). Bez linku nie da się zamówić. Typ „piętra” = piętro, pokój i wybór godziny; „imię” = tylko imię, dowóz jak najszybciej. Link wyciekł? Zmień kod w kolumnie A - stary link przestanie działać. Nowy kod: min. 10 losowych liter i cyfr.').setWrap(true);
   mi.setColumnWidth(8, 360);
 
   // Ustawienia
@@ -608,11 +608,11 @@ function przygotuj() {
     us.getRange('B:B').setNumberFormat('@');
     us.getRange(1, 1, 6, 3).setValues([
       ['PIN panelu', pin, 'PIN do panelu kuchni (panel.html). Zmień na swój.'],
-      ['Przyjmujemy zamówienia', 'TAK', 'TAK / NIE — można też przełączać w panelu'],
+      ['Przyjmujemy zamówienia', 'TAK', 'TAK / NIE - można też przełączać w panelu'],
       ['Komunikat gdy wyłączone', '', 'np. Dziś zamówienia tylko telefonicznie: 728 343 338'],
-      ['Telegram token', '', 'opcjonalnie: token bota Telegram — wtedy każde zamówienie przyjdzie wiadomością'],
+      ['Telegram token', '', 'opcjonalnie: token bota Telegram - wtedy każde zamówienie przyjdzie wiadomością'],
       ['Telegram chat id', '', 'opcjonalnie: id czatu/grupy kuchni'],
-      ['Uwaga', '', 'Kolumn „ID” i „Dane” w arkuszu Zamówienia nie zmieniaj — z nich korzysta panel.'],
+      ['Uwaga', '', 'Kolumn „ID” i „Dane” w arkuszu Zamówienia nie zmieniaj - z nich korzysta panel.'],
     ]);
   }
   us.getRange('A:A').setFontWeight('bold'); us.setColumnWidth(1, 200); us.setColumnWidth(2, 220); us.setColumnWidth(3, 520);
